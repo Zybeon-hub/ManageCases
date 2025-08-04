@@ -3,12 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
-const ExcelDatabase = require('./excel-db');
+const DatabaseManager = require('./database-manager');
 
 const PORT = process.env.PORT || 3000;
 
-// Initialize Excel Database
-const excelDB = new ExcelDatabase(path.join(__dirname, 'data'));
+// Initialize Database Manager
+const dbManager = new DatabaseManager();
 
 // Data file paths (for backwards compatibility)
 const DATA_DIR = path.join(__dirname, 'data');
