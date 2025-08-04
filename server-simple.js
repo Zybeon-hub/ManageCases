@@ -3,13 +3,18 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
+const ExcelDatabase = require('./excel-db');
 
 const PORT = process.env.PORT || 3000;
 
-// Data file paths
+// Initialize Excel Database
+const excelDB = new ExcelDatabase(path.join(__dirname, 'data'));
+
+// Data file paths (for backwards compatibility)
 const DATA_DIR = path.join(__dirname, 'data');
 const CASES_FILE = path.join(DATA_DIR, 'cases.json');
 const COUNTERS_FILE = path.join(DATA_DIR, 'counters.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 // User roles and permissions
 const USER_ROLES = {
@@ -33,19 +38,74 @@ const CASE_STATUSES = {
   'Reopen': ['Assigned', 'In Progress']  // Reopened cases can start fresh workflow
 };
 
-// Mock users for demo
-const USERS = {
-  'lead1': { id: 'lead1', name: 'John Lead', role: 'LEAD' },
-  'manager1': { id: 'manager1', name: 'Jane Manager', role: 'MANAGER' },
-  'admin1': { id: 'admin1', name: 'Mike Admin', role: 'ADMIN' },
-  'ops1': { id: 'ops1', name: 'Sarah Ops', role: 'OPS' },
-  'ops2': { id: 'ops2', name: 'Tom Ops', role: 'OPS' }
+// User management system
+let users = [
+  // Default admin user
+  {
+    id: 1,
+    username: 'admin',
+    password: 'admin123',
+    email: 'admin@company.com',
+    role: 'ADMIN',
+    name: 'System Admin',
+    createdAt: new Date().toISOString(),
+    isActive: true
+  }
+];
+
+// For backwards compatibility with existing code, create USERS object from users array
+let USERS = {};
+
+// Helper function to sync USERS object from users array
+function syncUsersObject() {
+  USERS = {};
+  users.forEach(user => {
+    USERS[user.username] = user;
+    // Also add by old IDs for compatibility
+    if (user.username === 'admin') USERS['admin1'] = user;
+  });
+}
+
+// Role limits configuration
+const ROLE_LIMITS = {
+  'LEAD': 2,
+  'MANAGER': 2,
+  'ADMIN': 2,
+  'OPS': 4
 };
+
+// Get current role counts
+function getRoleCounts() {
+  const counts = { LEAD: 0, MANAGER: 0, ADMIN: 0, OPS: 0 };
+  users.forEach(user => {
+    if (user.isActive) {
+      counts[user.role] = (counts[user.role] || 0) + 1;
+    }
+  });
+  return counts;
+}
+
+// Check if role has available slots
+function canAddRole(role) {
+  const counts = getRoleCounts();
+  return counts[role] < ROLE_LIMITS[role];
+}
+
+// Get user permissions based on role
+function getUserPermissions(role) {
+  return USER_ROLES[role]?.permissions || [];
+}
+
+// Hash password (simple implementation - use bcrypt in production)
+function hashPassword(password) {
+  // Simple hash for demo - use proper hashing in production
+  return password; // For now, storing plain text for demo
+}
 
 // Current session (in real app, use proper session management)
 let currentUser = null;
 
-// Data persistence functions
+// Data persistence functions using Excel/CSV format
 function ensureDataDirectory() {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -55,19 +115,47 @@ function ensureDataDirectory() {
 
 function saveData() {
   try {
-    ensureDataDirectory();
+    console.log('Saving data to Excel/CSV format...');
     
-    // Save cases
-    fs.writeFileSync(CASES_FILE, JSON.stringify(cases, null, 2));
+    // Save users to CSV
+    excelDB.saveUsers(users);
+    
+    // Extract comments from cases and save separately
+    const comments = excelDB.rebuildCommentsFromCases(cases);
+    excelDB.saveComments(comments);
+    
+    // Save cases without embedded comments
+    const casesForExcel = cases.map(caseItem => ({
+      id: caseItem.id,
+      title: caseItem.title,
+      description: caseItem.description,
+      status: caseItem.status,
+      priority: caseItem.priority,
+      assignedTo: caseItem.assignedTo,
+      createdAt: caseItem.createdAt,
+      updatedAt: caseItem.updatedAt,
+      createdBy: caseItem.createdBy
+    }));
+    excelDB.saveCases(casesForExcel);
     
     // Save counters
     const counters = {
       nextCaseId,
-      nextCommentId
+      nextCommentId,
+      nextUserId: Math.max(...users.map(u => u.id), 0) + 1
     };
-    fs.writeFileSync(COUNTERS_FILE, JSON.stringify(counters, null, 2));
+    excelDB.saveCounters(counters);
     
-    console.log('Data saved successfully');
+    // Also save JSON versions for backwards compatibility
+    ensureDataDirectory();
+    fs.writeFileSync(CASES_FILE, JSON.stringify(cases, null, 2));
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    fs.writeFileSync(COUNTERS_FILE, JSON.stringify({
+      nextCaseId,
+      nextCommentId
+    }, null, 2));
+    
+    console.log('Data saved successfully to both Excel/CSV and JSON formats');
   } catch (error) {
     console.error('Error saving data:', error);
   }
@@ -75,30 +163,90 @@ function saveData() {
 
 function loadData() {
   try {
-    ensureDataDirectory();
+    console.log('Loading data from Excel/CSV format...');
     
-    // Load cases if file exists
-    if (fs.existsSync(CASES_FILE)) {
-      const casesData = fs.readFileSync(CASES_FILE, 'utf8');
-      cases = JSON.parse(casesData);
-      console.log(`Loaded ${cases.length} cases from storage`);
-    } else {
-      console.log('No existing cases file, using default data');
+    // Load users from CSV
+    const loadedUsers = excelDB.loadUsers();
+    if (loadedUsers.length > 0) {
+      users = loadedUsers;
+      console.log(`Loaded ${users.length} users from Excel/CSV`);
     }
     
-    // Load counters if file exists
+    // Load cases and comments from CSV
+    const loadedCases = excelDB.loadCases();
+    const loadedComments = excelDB.loadComments();
+    
+    if (loadedCases.length > 0) {
+      cases = excelDB.rebuildCasesWithComments(loadedCases, loadedComments);
+      console.log(`Loaded ${cases.length} cases with comments from Excel/CSV`);
+    }
+    
+    // Load counters
+    const counters = excelDB.loadCounters();
+    nextCaseId = counters.nextCaseId || 4;
+    nextCommentId = counters.nextCommentId || 1;
+    
+    // Sync USERS object for compatibility
+    syncUsersObject();
+    
+    console.log(`Loaded counters: nextCaseId=${nextCaseId}, nextCommentId=${nextCommentId}`);
+    
+    // Fallback to JSON if CSV files are empty
+    if (users.length === 1 && cases.length === 0) {
+      console.log('CSV files seem empty, trying JSON fallback...');
+      loadDataFromJSON();
+    }
+    
+  } catch (error) {
+    console.error('Error loading data from Excel/CSV:', error);
+    console.log('Trying JSON fallback...');
+    loadDataFromJSON();
+  }
+}
+
+function loadDataFromJSON() {
+  try {
+    ensureDataDirectory();
+    
+    // Load users from JSON if file exists
+    if (fs.existsSync(USERS_FILE)) {
+      const usersData = fs.readFileSync(USERS_FILE, 'utf8');
+      const jsonUsers = JSON.parse(usersData);
+      if (jsonUsers.length > users.length) {
+        users = jsonUsers;
+        console.log(`Loaded ${users.length} users from JSON backup`);
+      }
+    }
+    
+    // Load cases from JSON if file exists
+    if (fs.existsSync(CASES_FILE)) {
+      const casesData = fs.readFileSync(CASES_FILE, 'utf8');
+      const jsonCases = JSON.parse(casesData);
+      if (jsonCases.length > 0) {
+        cases = jsonCases;
+        console.log(`Loaded ${cases.length} cases from JSON backup`);
+      }
+    }
+    
+    // Load counters from JSON if file exists
     if (fs.existsSync(COUNTERS_FILE)) {
       const countersData = fs.readFileSync(COUNTERS_FILE, 'utf8');
       const counters = JSON.parse(countersData);
       nextCaseId = counters.nextCaseId || 4;
       nextCommentId = counters.nextCommentId || 3;
-      console.log(`Loaded counters: nextCaseId=${nextCaseId}, nextCommentId=${nextCommentId}`);
-    } else {
-      console.log('No existing counters file, using defaults');
+      console.log(`Loaded counters from JSON: nextCaseId=${nextCaseId}, nextCommentId=${nextCommentId}`);
     }
+    
+    // Sync USERS object for compatibility
+    syncUsersObject();
+    
+    // Save to Excel format for future use
+    saveData();
+    
   } catch (error) {
-    console.error('Error loading data:', error);
+    console.error('Error loading data from JSON:', error);
     console.log('Using default data');
+    syncUsersObject(); // Ensure USERS object is synced even on error
   }
 }
 
@@ -189,8 +337,9 @@ function canTransitionStatus(fromStatus, toStatus, caseItem = null) {
 
 function getUserFromRequest(req) {
   // In a real app, extract from JWT token or session
-  const userId = req.headers['x-user-id'] || 'admin1'; // Default for demo
-  return USERS[userId] || null;
+  const userId = req.headers['x-user-id'] || req.headers['x-username'] || 'admin'; // Default for demo
+  // Try to find by username first, then by old ID for compatibility
+  return users.find(u => u.username === userId) || USERS[userId] || null;
 }
 
 // Helper function to get content type
@@ -279,7 +428,7 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    // Login endpoint
+    // Login endpoint with credentials
     if (pathname === '/api/auth/login' && method === 'POST') {
       parseBody(req, (err, body) => {
         if (err) {
@@ -287,20 +436,143 @@ const server = http.createServer((req, res) => {
           return;
         }
         
-        const { userId } = body;
-        const user = USERS[userId];
+        const { username, password } = body;
         
-        if (!user) {
-          sendError(res, 'Invalid user', 401);
+        if (!username || !password) {
+          sendError(res, 'Username and password are required', 400);
           return;
         }
         
+        // Find user by username
+        const user = users.find(u => u.username === username && u.isActive);
+        
+        if (!user || user.password !== password) {
+          sendError(res, 'Invalid credentials', 401);
+          return;
+        }
+        
+        // Generate simple session token (in production, use proper JWT or session management)
+        const sessionToken = 'session_' + user.username + '_' + Date.now();
+        
         currentUser = user;
         sendJSON(res, {
-          ...user,
+          success: true,
+          user: {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            role: user.role,
+            email: user.email,
+            sessionToken
+          },
           permissions: USER_ROLES[user.role].permissions,
           allowedStatuses: Object.keys(CASE_STATUSES)
         });
+      });
+      return;
+    }
+    
+    // Signup endpoint
+    if (pathname === '/api/auth/signup' && method === 'POST') {
+      parseBody(req, (err, body) => {
+        if (err) {
+          sendError(res, 'Invalid JSON');
+          return;
+        }
+        
+        const { username, password, name, email, role } = body;
+        
+        // Validate required fields
+        if (!username || !password || !name || !email || !role) {
+          sendError(res, 'All fields are required', 400);
+          return;
+        }
+        
+        // Validate role
+        if (!USER_ROLES[role]) {
+          sendError(res, 'Invalid role', 400);
+          return;
+        }
+        
+        // Check if username already exists
+        if (users.find(u => u.username === username)) {
+          sendError(res, 'Username already exists', 409);
+          return;
+        }
+        
+        // Check if email already exists
+        if (users.find(u => u.email === email)) {
+          sendError(res, 'Email already exists', 409);
+          return;
+        }
+        
+        // Check role limits
+        if (!canAddRole(role)) {
+          const counts = getRoleCounts();
+          sendError(res, `Role limit reached. Current: ${counts[role]}/${ROLE_LIMITS[role]} for ${role}`, 409);
+          return;
+        }
+        
+        // Check total user limit (10 users max)
+        const activeUsers = users.filter(u => u.isActive).length;
+        if (activeUsers >= 10) {
+          sendError(res, 'Maximum user limit reached (10 users)', 409);
+          return;
+        }
+        
+        // Generate new user ID
+        const newUserId = Math.max(...users.map(u => u.id), 0) + 1;
+        
+        // Create new user
+        const newUser = {
+          id: newUserId,
+          username: username.toLowerCase(),
+          password: hashPassword(password),
+          name,
+          email: email.toLowerCase(),
+          role,
+          createdAt: new Date().toISOString(),
+          isActive: true
+        };
+        
+        users.push(newUser);
+        syncUsersObject();
+        saveData();
+        
+        sendJSON(res, {
+          success: true,
+          message: 'User created successfully',
+          user: {
+            id: newUser.id,
+            username: newUser.username,
+            name: newUser.name,
+            role: newUser.role,
+            email: newUser.email
+          }
+        }, 201);
+      });
+      return;
+    }
+
+    // Get user role information and limits
+    if (pathname === '/api/auth/roles' && method === 'GET') {
+      const counts = getRoleCounts();
+      const roleInfo = Object.keys(USER_ROLES).map(roleKey => ({
+        key: roleKey,
+        name: USER_ROLES[roleKey].name,
+        permissions: USER_ROLES[roleKey].permissions,
+        limit: ROLE_LIMITS[roleKey],
+        current: counts[roleKey],
+        available: ROLE_LIMITS[roleKey] - counts[roleKey] > 0
+      }));
+      
+      const totalUsers = users.filter(u => u.isActive).length;
+      
+      sendJSON(res, {
+        roles: roleInfo,
+        totalUsers,
+        maxUsers: 10,
+        canAddUser: totalUsers < 10
       });
       return;
     }

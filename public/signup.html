@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Workflow - Sign Up</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .auth-header p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .auth-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .auth-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .auth-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .auth-links {
+            text-align: center;
+        }
+        
+        .auth-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c53030;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+            border: 1px solid #fed7d7;
+        }
+        
+        .success-message {
+            background: #f0fff4;
+            color: #38a169;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+            border: 1px solid #c6f6d5;
+        }
+        
+        .info-message {
+            background: #ebf8ff;
+            color: #2b77cb;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+            border: 1px solid #bee3f8;
+        }
+        
+        .role-info {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+        
+        .role-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .role-limit {
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .role-option:disabled {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join the Case Workflow Management System</p>
+            </div>
+            
+            <div id="message-container"></div>
+            
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select a role...</option>
+                    </select>
+                    <div class="role-info" id="role-info"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <button type="submit" class="auth-button" id="signup-btn">Create Account</button>
+            </form>
+            
+            <div class="auth-links">
+                <p>Already have an account? <a href="login.html">Sign in here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const signupForm = document.getElementById('signup-form');
+        const signupBtn = document.getElementById('signup-btn');
+        const messageContainer = document.getElementById('message-container');
+        const roleSelect = document.getElementById('role');
+        const roleInfo = document.getElementById('role-info');
+        
+        let roleData = null;
+        
+        function showMessage(message, type = 'error') {
+            messageContainer.innerHTML = `
+                <div class="${type}-message">
+                    ${message}
+                </div>
+            `;
+        }
+        
+        function clearMessage() {
+            messageContainer.innerHTML = '';
+        }
+        
+        // Load role information
+        async function loadRoleInfo() {
+            try {
+                const response = await fetch('/api/auth/roles');
+                const data = await response.json();
+                roleData = data;
+                
+                if (!data.canAddUser) {
+                    showMessage(`Maximum user limit reached (${data.totalUsers}/${data.maxUsers})`, 'error');
+                    signupBtn.disabled = true;
+                    return;
+                }
+                
+                // Populate role dropdown
+                roleSelect.innerHTML = '<option value="">Select a role...</option>';
+                
+                data.roles.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role.key;
+                    option.textContent = `${role.name} (${role.current}/${role.limit} used)`;
+                    option.disabled = !role.available;
+                    roleSelect.appendChild(option);
+                });
+                
+                // Show general info
+                showMessage(`${data.totalUsers}/${data.maxUsers} users registered`, 'info');
+                
+            } catch (error) {
+                console.error('Error loading role info:', error);
+                showMessage('Failed to load role information');
+            }
+        }
+        
+        // Update role info when selection changes
+        roleSelect.addEventListener('change', (e) => {
+            const selectedRole = e.target.value;
+            if (selectedRole && roleData) {
+                const role = roleData.roles.find(r => r.key === selectedRole);
+                if (role) {
+                    roleInfo.innerHTML = `
+                        Permissions: ${role.permissions.join(', ')}<br>
+                        Available slots: ${role.limit - role.current}/${role.limit}
+                    `;
+                }
+            } else {
+                roleInfo.innerHTML = '';
+            }
+        });
+        
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessage();
+            
+            const formData = new FormData(signupForm);
+            const userData = {
+                name: formData.get('name').trim(),
+                username: formData.get('username').trim(),
+                email: formData.get('email').trim(),
+                role: formData.get('role'),
+                password: formData.get('password')
+            };
+            
+            const confirmPassword = formData.get('confirmPassword');
+            
+            // Validation
+            if (!userData.name || !userData.username || !userData.email || !userData.role || !userData.password) {
+                showMessage('Please fill in all fields');
+                return;
+            }
+            
+            if (userData.password !== confirmPassword) {
+                showMessage('Passwords do not match');
+                return;
+            }
+            
+            if (userData.password.length < 6) {
+                showMessage('Password must be at least 6 characters long');
+                return;
+            }
+            
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
+            
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showMessage('Account created successfully! Redirecting to login...', 'success');
+                    
+                    // Redirect to login after a delay
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.error || 'Signup failed');
+                    // Reload role info in case limits changed
+                    await loadRoleInfo();
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showMessage('Network error. Please try again.');
+            } finally {
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Create Account';
+            }
+        });
+        
+        // Check if already logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            window.location.href = '/';
+        }
+        
+        // Load role information on page load
+        loadRoleInfo();
+    </script>
+</body>
+</html>

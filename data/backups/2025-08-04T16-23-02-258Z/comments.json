@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "caseId": 1,
+    "text": "Initial complaint received via email",
+    "author": "System",
+    "type": "comment",
+    "attachments": [],
+    "timestamp": "2025-07-28T00:00:00.000Z",
+    "createdAt": "2025-08-04T16:23:02.233Z",
+    "updatedAt": "2025-08-04T16:23:02.233Z"
+  },
+  {
+    "id": 2,
+    "caseId": 2,
+    "text": "Reviewing customer account",
+    "author": "Tom Ops",
+    "type": "comment",
+    "attachments": [],
+    "timestamp": "2025-07-29T00:00:00.000Z",
+    "createdAt": "2025-08-04T16:23:02.236Z",
+    "updatedAt": "2025-08-04T16:23:02.236Z"
+  },
+  {
+    "id": 3,
+    "caseId": 2,
+    "text": "Found discrepancy in billing system",
+    "author": "Tom Ops",
+    "type": "comment",
+    "attachments": [],
+    "timestamp": "2025-07-30T00:00:00.000Z",
+    "createdAt": "2025-08-04T16:23:02.240Z",
+    "updatedAt": "2025-08-04T16:23:02.240Z"
+  },
+  {
+    "id": 4,
+    "caseId": 3,
+    "text": "Password reset sent to customer",
+    "author": "Sarah Ops",
+    "type": "comment",
+    "attachments": [],
+    "timestamp": "2025-07-26T00:00:00.000Z",
+    "createdAt": "2025-08-04T16:23:02.246Z",
+    "updatedAt": "2025-08-04T16:23:02.246Z"
+  },
+  {
+    "id": 5,
+    "caseId": 3,
+    "text": "Customer confirmed access restored",
+    "author": "Sarah Ops",
+    "type": "comment",
+    "attachments": [],
+    "timestamp": "2025-07-27T00:00:00.000Z",
+    "createdAt": "2025-08-04T16:23:02.248Z",
+    "updatedAt": "2025-08-04T16:23:02.248Z"
+  }
+]

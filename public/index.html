@@ -8,42 +8,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- Login Section -->
-        <div id="login-section" class="login-section">
+        <!-- Authentication Check -->
+        <div id="auth-check" class="login-section">
             <div class="login-card">
                 <h2>Case Workflow Management System</h2>
-                <p>Please select your role to continue:</p>
-                <div class="user-selection">
-                    <div class="user-option" data-user="lead1">
-                        <div class="user-info">
-                            <strong>John Lead</strong>
-                            <span class="user-role">Lead (Read Only)</span>
-                        </div>
-                    </div>
-                    <div class="user-option" data-user="manager1">
-                        <div class="user-info">
-                            <strong>Jane Manager</strong>
-                            <span class="user-role">Manager (Read/Update Status)</span>
-                        </div>
-                    </div>
-                    <div class="user-option" data-user="admin1">
-                        <div class="user-info">
-                            <strong>Mike Admin</strong>
-                            <span class="user-role">Admin (Full Access)</span>
-                        </div>
-                    </div>
-                    <div class="user-option" data-user="ops1">
-                        <div class="user-info">
-                            <strong>Sarah Ops</strong>
-                            <span class="user-role">Ops (Read/Update/Create)</span>
-                        </div>
-                    </div>
-                    <div class="user-option" data-user="ops2">
-                        <div class="user-info">
-                            <strong>Tom Ops</strong>
-                            <span class="user-role">Ops (Read/Update/Create)</span>
-                        </div>
-                    </div>
+                <p>Checking authentication...</p>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <div class="spinner"></div>
                 </div>
             </div>
         </div>
@@ -188,35 +159,83 @@
                 console.log('App initializing...');
                 this.setupEventListeners();
                 setTimeout(() => {
-                    this.showLoginScreen();
+                    this.checkAuthentication();
                 }, 100);
             }
 
-            showLoginScreen() {
-                console.log('Showing login screen...');
-                const loginSection = document.getElementById('login-section');
-                const appSection = document.getElementById('app-section');
+            checkAuthentication() {
+                console.log('Checking authentication...');
+                const sessionToken = localStorage.getItem('sessionToken');
+                const currentUser = localStorage.getItem('currentUser');
+                const userPermissions = localStorage.getItem('userPermissions');
                 
-                if (loginSection) {
-                    loginSection.classList.remove('hidden');
-                    loginSection.style.display = 'flex';
+                if (sessionToken && currentUser && userPermissions) {
+                    try {
+                        this.currentUser = JSON.parse(currentUser);
+                        this.userPermissions = JSON.parse(userPermissions);
+                        console.log('Found stored authentication, loading app...');
+                        this.loadApp();
+                    } catch (error) {
+                        console.error('Error parsing stored user data:', error);
+                        this.redirectToLogin();
+                    }
                 } else {
-                    console.error('Login section not found!');
+                    console.log('No authentication found, redirecting to login...');
+                    this.redirectToLogin();
                 }
+            }
+            
+            redirectToLogin() {
+                // Clear any invalid stored data
+                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userPermissions');
                 
-                if (appSection) {
-                    appSection.classList.add('hidden');
-                    appSection.style.display = 'none';
+                // Redirect to login page
+                window.location.href = '/login.html';
+            }
+            
+            async loadApp() {
+                // Verify the session is still valid
+                try {
+                    const response = await this.makeAuthenticatedRequest('/api/auth/user');
+                    if (!response.ok) {
+                        console.log('Session invalid, redirecting to login...');
+                        this.redirectToLogin();
+                        return;
+                    }
+                    
+                    // Load workflow information
+                    await this.loadWorkflowInfo();
+                    
+                    // Update UI
+                    document.getElementById('current-user-name').textContent = this.currentUser.name;
+                    document.getElementById('current-user-role').textContent = this.currentUser.role;
+                    
+                    // Show/hide buttons based on permissions
+                    this.updateUIForPermissions();
+                    
+                    this.showAppScreen();
+                    this.loadCases();
+                    console.log('App loaded successfully for user:', this.currentUser.name);
+                } catch (error) {
+                    console.error('Error loading app:', error);
+                    this.redirectToLogin();
                 }
             }
 
+            showLoginScreen() {
+                // This method is now obsolete but kept for compatibility
+                this.redirectToLogin();
+            }
+
             showAppScreen() {
-                const loginSection = document.getElementById('login-section');
+                const authCheck = document.getElementById('auth-check');
                 const appSection = document.getElementById('app-section');
                 
-                if (loginSection) {
-                    loginSection.classList.add('hidden');
-                    loginSection.style.display = 'none';
+                if (authCheck) {
+                    authCheck.classList.add('hidden');
+                    authCheck.style.display = 'none';
                 }
                 if (appSection) {
                     appSection.classList.remove('hidden');
@@ -228,18 +247,6 @@
                 console.log('Setting up event listeners...');
                 
                 setTimeout(() => {
-                    // Login user selection
-                    const userOptions = document.querySelectorAll('.user-option');
-                    console.log('Found user options:', userOptions.length);
-                    
-                    userOptions.forEach((option, index) => {
-                        option.addEventListener('click', (e) => {
-                            const userId = e.currentTarget.dataset.user;
-                            console.log('User clicked:', userId);
-                            this.login(userId);
-                        });
-                    });
-
                     // Logout button
                     const logoutBtn = document.getElementById('logout-btn');
                     if (logoutBtn) {
@@ -304,44 +311,6 @@
                 }, 200);
             }
 
-            async login(userId) {
-                console.log('Attempting login for:', userId);
-                try {
-                    const response = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ userId })
-                    });
-
-                    if (response.ok) {
-                        this.currentUser = await response.json();
-                        this.userPermissions = this.currentUser.permissions;
-                        this.allowedStatuses = this.currentUser.allowedStatuses;
-                        
-                        // Load workflow information
-                        await this.loadWorkflowInfo();
-                        
-                        // Update UI
-                        document.getElementById('current-user-name').textContent = this.currentUser.name;
-                        document.getElementById('current-user-role').textContent = this.currentUser.role;
-                        
-                        // Show/hide buttons based on permissions
-                        this.updateUIForPermissions();
-                        
-                        this.showAppScreen();
-                        this.loadCases();
-                        this.showToast(`Welcome, ${this.currentUser.name}!`, 'success');
-                    } else {
-                        throw new Error('Login failed');
-                    }
-                } catch (error) {
-                    this.showToast('Login failed: ' + error.message, 'error');
-                    console.error('Login error:', error);
-                }
-            }
-
             async loadWorkflowInfo() {
                 try {
                     const response = await this.makeAuthenticatedRequest('/api/workflow');
@@ -357,11 +326,21 @@
             }
 
             logout() {
+                // Clear all authentication data
+                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userPermissions');
+                
                 this.currentUser = null;
                 this.userPermissions = [];
                 this.cases = [];
-                this.showLoginScreen();
+                
                 this.showToast('Logged out successfully', 'info');
+                
+                // Redirect to login page
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1000);
             }
 
             hasPermission(permission) {
@@ -385,7 +364,7 @@
                     ...options,
                     headers: {
                         ...options.headers,
-                        'X-User-Id': this.currentUser?.id || 'admin1'
+                        'X-Username': this.currentUser?.username || 'admin'
                     }
                 });
             }

@@ -1,0 +1,211 @@
+[
+  {
+    "id": 1,
+    "timestamp": "2025-08-04T16:23:02.184Z",
+    "userId": "system",
+    "action": "database_save",
+    "entity": "all_tables",
+    "entityId": null,
+    "oldData": null,
+    "newData": "{\"timestamp\":\"2025-08-04T16:23:02.183Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 1,
+    "timestamp": "2025-08-04T16:23:02.197Z",
+    "userId": "system",
+    "action": "database_save",
+    "entity": "all_tables",
+    "entityId": null,
+    "oldData": null,
+    "newData": "{\"timestamp\":\"2025-08-04T16:23:02.197Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 2,
+    "timestamp": "2025-08-04T16:23:02.202Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 1,
+    "oldData": null,
+    "newData": "{\"id\":1,\"username\":\"truder\",\"password\":\"Truder\",\"email\":\"truder@truder.com\",\"role\":\"LEAD\",\"name\":\"Truder Lead\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.200Z\",\"updatedAt\":\"2025-08-04T16:23:02.200Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 3,
+    "timestamp": "2025-08-04T16:23:02.205Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 2,
+    "oldData": null,
+    "newData": "{\"id\":2,\"username\":\"exemel\",\"password\":\"Exemel\",\"email\":\"exemel@exemel.com\",\"role\":\"MANAGER\",\"name\":\"Exemel Manager\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.203Z\",\"updatedAt\":\"2025-08-04T16:23:02.203Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 4,
+    "timestamp": "2025-08-04T16:23:02.208Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 3,
+    "oldData": null,
+    "newData": "{\"id\":3,\"username\":\"victor\",\"password\":\"Victor\",\"email\":\"victor@victor.com\",\"role\":\"ADMIN\",\"name\":\"Victor Admin\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.206Z\",\"updatedAt\":\"2025-08-04T16:23:02.206Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 5,
+    "timestamp": "2025-08-04T16:23:02.210Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 4,
+    "oldData": null,
+    "newData": "{\"id\":4,\"username\":\"hechtml\",\"password\":\"Hechtml\",\"email\":\"hechtml@hechtml.com\",\"role\":\"OPS\",\"name\":\"Hechtml Ops\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.208Z\",\"updatedAt\":\"2025-08-04T16:23:02.208Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 6,
+    "timestamp": "2025-08-04T16:23:02.213Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 5,
+    "oldData": null,
+    "newData": "{\"id\":5,\"username\":\"seeyess\",\"password\":\"Seeyess\",\"email\":\"seeyess@seeyess.com\",\"role\":\"OPS\",\"name\":\"Seeyess Ops\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.211Z\",\"updatedAt\":\"2025-08-04T16:23:02.211Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 7,
+    "timestamp": "2025-08-04T16:23:02.215Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 6,
+    "oldData": null,
+    "newData": "{\"id\":6,\"username\":\"jaypjee\",\"password\":\"Jaypjee\",\"email\":\"jaypjee@jaypjee.com\",\"role\":\"OPS\",\"name\":\"Jaypjee Ops\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.214Z\",\"updatedAt\":\"2025-08-04T16:23:02.214Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 8,
+    "timestamp": "2025-08-04T16:23:02.218Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 7,
+    "oldData": null,
+    "newData": "{\"id\":7,\"username\":\"yaamal\",\"password\":\"Yaamal\",\"email\":\"yaamal@yaamal.com\",\"role\":\"MANAGER\",\"name\":\"Yaamal Manager\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.216Z\",\"updatedAt\":\"2025-08-04T16:23:02.216Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 9,
+    "timestamp": "2025-08-04T16:23:02.221Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 8,
+    "oldData": null,
+    "newData": "{\"id\":8,\"username\":\"jayson\",\"password\":\"Jayson\",\"email\":\"jayson@jayson.com\",\"role\":\"LEAD\",\"name\":\"Jayson Lead\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.219Z\",\"updatedAt\":\"2025-08-04T16:23:02.219Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 10,
+    "timestamp": "2025-08-04T16:23:02.226Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "users",
+    "entityId": 9,
+    "oldData": null,
+    "newData": "{\"id\":9,\"username\":\"eyecye\",\"password\":\"Eyecye\",\"email\":\"eyecye@eyecye.com\",\"role\":\"OPS\",\"name\":\"Eyecye Ops\",\"isActive\":true,\"lastLogin\":null,\"loginCount\":0,\"createdAt\":\"2025-08-04T16:23:02.223Z\",\"updatedAt\":\"2025-08-04T16:23:02.223Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 11,
+    "timestamp": "2025-08-04T16:23:02.231Z",
+    "userId": "admin1",
+    "action": "create",
+    "entity": "cases",
+    "entityId": 1,
+    "oldData": null,
+    "newData": "{\"id\":1,\"title\":\"Customer Complaint - Product Defect\",\"description\":\"Customer reports defective product received\",\"status\":\"Open\",\"priority\":\"High\",\"assignedTo\":\"Sarah Ops\",\"createdBy\":\"admin1\",\"dueDate\":null,\"category\":\"General\",\"tags\":[],\"createdAt\":\"2025-08-04T16:23:02.230Z\",\"updatedAt\":\"2025-08-04T16:23:02.230Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 12,
+    "timestamp": "2025-08-04T16:23:02.234Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "comments",
+    "entityId": 1,
+    "oldData": null,
+    "newData": "{\"id\":1,\"caseId\":1,\"text\":\"Initial complaint received via email\",\"author\":\"System\",\"type\":\"comment\",\"attachments\":[],\"timestamp\":\"2025-07-28T00:00:00.000Z\",\"createdAt\":\"2025-08-04T16:23:02.233Z\",\"updatedAt\":\"2025-08-04T16:23:02.233Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 13,
+    "timestamp": "2025-08-04T16:23:02.235Z",
+    "userId": "manager1",
+    "action": "create",
+    "entity": "cases",
+    "entityId": 2,
+    "oldData": null,
+    "newData": "{\"id\":2,\"title\":\"Billing Inquiry\",\"description\":\"Customer questioning charges on their account\",\"status\":\"In Progress\",\"priority\":\"Medium\",\"assignedTo\":\"Tom Ops\",\"createdBy\":\"manager1\",\"dueDate\":null,\"category\":\"General\",\"tags\":[],\"createdAt\":\"2025-08-04T16:23:02.234Z\",\"updatedAt\":\"2025-08-04T16:23:02.234Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 14,
+    "timestamp": "2025-08-04T16:23:02.238Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "comments",
+    "entityId": 2,
+    "oldData": null,
+    "newData": "{\"id\":2,\"caseId\":2,\"text\":\"Reviewing customer account\",\"author\":\"Tom Ops\",\"type\":\"comment\",\"attachments\":[],\"timestamp\":\"2025-07-29T00:00:00.000Z\",\"createdAt\":\"2025-08-04T16:23:02.236Z\",\"updatedAt\":\"2025-08-04T16:23:02.236Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 15,
+    "timestamp": "2025-08-04T16:23:02.242Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "comments",
+    "entityId": 3,
+    "oldData": null,
+    "newData": "{\"id\":3,\"caseId\":2,\"text\":\"Found discrepancy in billing system\",\"author\":\"Tom Ops\",\"type\":\"comment\",\"attachments\":[],\"timestamp\":\"2025-07-30T00:00:00.000Z\",\"createdAt\":\"2025-08-04T16:23:02.240Z\",\"updatedAt\":\"2025-08-04T16:23:02.240Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 16,
+    "timestamp": "2025-08-04T16:23:02.246Z",
+    "userId": "ops1",
+    "action": "create",
+    "entity": "cases",
+    "entityId": 3,
+    "oldData": null,
+    "newData": "{\"id\":3,\"title\":\"Technical Support Request\",\"description\":\"Customer unable to access their account\",\"status\":\"Closed-Approved\",\"priority\":\"Low\",\"assignedTo\":\"Sarah Ops\",\"createdBy\":\"ops1\",\"dueDate\":null,\"category\":\"General\",\"tags\":[],\"createdAt\":\"2025-08-04T16:23:02.243Z\",\"updatedAt\":\"2025-08-04T16:23:02.243Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 17,
+    "timestamp": "2025-08-04T16:23:02.247Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "comments",
+    "entityId": 4,
+    "oldData": null,
+    "newData": "{\"id\":4,\"caseId\":3,\"text\":\"Password reset sent to customer\",\"author\":\"Sarah Ops\",\"type\":\"comment\",\"attachments\":[],\"timestamp\":\"2025-07-26T00:00:00.000Z\",\"createdAt\":\"2025-08-04T16:23:02.246Z\",\"updatedAt\":\"2025-08-04T16:23:02.246Z\"}",
+    "ipAddress": "127.0.0.1"
+  },
+  {
+    "id": 18,
+    "timestamp": "2025-08-04T16:23:02.249Z",
+    "userId": "system",
+    "action": "create",
+    "entity": "comments",
+    "entityId": 5,
+    "oldData": null,
+    "newData": "{\"id\":5,\"caseId\":3,\"text\":\"Customer confirmed access restored\",\"author\":\"Sarah Ops\",\"type\":\"comment\",\"attachments\":[],\"timestamp\":\"2025-07-27T00:00:00.000Z\",\"createdAt\":\"2025-08-04T16:23:02.248Z\",\"updatedAt\":\"2025-08-04T16:23:02.248Z\"}",
+    "ipAddress": "127.0.0.1"
+  }
+]

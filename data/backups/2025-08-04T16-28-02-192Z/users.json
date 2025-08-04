@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "admin123",
+    "email": "admin@company.com",
+    "role": "ADMIN",
+    "name": "System Admin",
+    "createdAt": "2025-08-04T14:50:22.332Z",
+    "isActive": true
+  },
+  {
+    "id": 2,
+    "username": "truder",
+    "password": "Truder",
+    "email": "truder@truder.com",
+    "role": "LEAD",
+    "name": "Truder Lead",
+    "createdAt": "2025-08-04T15:01:08.583Z",
+    "isActive": true
+  },
+  {
+    "id": 3,
+    "username": "exemel",
+    "password": "Exemel",
+    "email": "exemel@exemel.com",
+    "role": "MANAGER",
+    "name": "Exemel Manager",
+    "createdAt": "2025-08-04T15:01:08.583Z",
+    "isActive": true
+  },
+  {
+    "id": 4,
+    "username": "victor",
+    "password": "Victor",
+    "email": "victor@victor.com",
+    "role": "ADMIN",
+    "name": "Victor Admin",
+    "createdAt": "2025-08-04T15:01:08.583Z",
+    "isActive": true
+  },
+  {
+    "id": 5,
+    "username": "hechtml",
+    "password": "Hechtml",
+    "email": "hechtml@hechtml.com",
+    "role": "OPS",
+    "name": "Hechtml Ops",
+    "createdAt": "2025-08-04T15:01:08.583Z",
+    "isActive": true
+  },
+  {
+    "id": 6,
+    "username": "seeyess",
+    "password": "Seeyess",
+    "email": "seeyess@seeyess.com",
+    "role": "OPS",
+    "name": "Seeyess Ops",
+    "createdAt": "2025-08-04T15:01:08.583Z",
+    "isActive": true
+  },
+  {
+    "id": 7,
+    "username": "jaypjee",
+    "password": "Jaypjee",
+    "email": "jaypjee@jaypjee.com",
+    "role": "OPS",
+    "name": "Jaypjee Ops",
+    "createdAt": "2025-08-04T15:01:08.583Z",
+    "isActive": true
+  },
+  {
+    "id": 8,
+    "username": "yaamal",
+    "password": "Yaamal",
+    "email": "yaamal@yaamal.com",
+    "role": "MANAGER",
+    "name": "Yaamal Manager",
+    "createdAt": "2025-08-04T15:01:34.860Z",
+    "isActive": true
+  },
+  {
+    "id": 9,
+    "username": "jayson",
+    "password": "Jayson",
+    "email": "jayson@jayson.com",
+    "role": "LEAD",
+    "name": "Jayson Lead",
+    "createdAt": "2025-08-04T15:01:34.860Z",
+    "isActive": true
+  },
+  {
+    "id": 10,
+    "username": "eyecye",
+    "password": "Eyecye",
+    "email": "eyecye@eyecye.com",
+    "role": "OPS",
+    "name": "Eyecye Ops",
+    "createdAt": "2025-08-04T15:01:34.860Z",
+    "isActive": true
+  },
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "admin123",
+    "email": "admin@company.com",
+    "role": "ADMIN",
+    "name": "System Admin",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 2,
+    "username": "truder",
+    "password": "Truder",
+    "email": "truder@truder.com",
+    "role": "LEAD",
+    "name": "Truder Lead",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 3,
+    "username": "exemel",
+    "password": "Exemel",
+    "email": "exemel@exemel.com",
+    "role": "MANAGER",
+    "name": "Exemel Manager",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 4,
+    "username": "victor",
+    "password": "Victor",
+    "email": "victor@victor.com",
+    "role": "ADMIN",
+    "name": "Victor Admin",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 5,
+    "username": "hechtml",
+    "password": "Hechtml",
+    "email": "hechtml@hechtml.com",
+    "role": "OPS",
+    "name": "Hechtml Ops",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 6,
+    "username": "seeyess",
+    "password": "Seeyess",
+    "email": "seeyess@seeyess.com",
+    "role": "OPS",
+    "name": "Seeyess Ops",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 7,
+    "username": "jaypjee",
+    "password": "Jaypjee",
+    "email": "jaypjee@jaypjee.com",
+    "role": "OPS",
+    "name": "Jaypjee Ops",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 8,
+    "username": "yaamal",
+    "password": "Yaamal",
+    "email": "yaamal@yaamal.com",
+    "role": "MANAGER",
+    "name": "Yaamal Manager",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 9,
+    "username": "jayson",
+    "password": "Jayson",
+    "email": "jayson@jayson.com",
+    "role": "LEAD",
+    "name": "Jayson Lead",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 10,
+    "username": "eyecye",
+    "password": "Eyecye",
+    "email": "eyecye@eyecye.com",
+    "role": "OPS",
+    "name": "Eyecye Ops",
+    "createdAt": "2025-08-04T15:00:00.000Z",
+    "isActive": true
+  }
+]

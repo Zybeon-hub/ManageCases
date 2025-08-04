@@ -1,0 +1,11 @@
+ID,Username,Password,Name,Email,Role,Created,Active
+1,"admin","admin123","System Admin","admin@company.com","ADMIN","2025-08-04T14:50:22.332Z",true
+5,"truder","Truder","Truder Lead","truder@truder.com","LEAD","2025-08-04T15:01:08.583Z",true
+6,"exemel","Exemel","Exemel Manager","exemel@exemel.com","MANAGER","2025-08-04T15:01:08.583Z",true
+7,"victor","Victor","Victor Admin","victor@victor.com","ADMIN","2025-08-04T15:01:08.583Z",true
+8,"hechtml","Hechtml","Hechtml Ops","hechtml@hechtml.com","OPS","2025-08-04T15:01:08.583Z",true
+9,"seeyess","Seeyess","Seeyess Ops","seeyess@seeyess.com","OPS","2025-08-04T15:01:08.583Z",true
+10,"jaypjee","Jaypjee","Jaypjee Ops","jaypjee@jaypjee.com","OPS","2025-08-04T15:01:08.583Z",true
+11,"yaamal","Yaamal","Yaamal Manager","yaamal@yaamal.com","MANAGER","2025-08-04T15:01:34.860Z",true
+12,"jayson","Jayson","Jayson Lead","jayson@jayson.com","LEAD","2025-08-04T15:01:34.860Z",true
+13,"eyecye","Eyecye","Eyecye Ops","eyecye@eyecye.com","OPS","2025-08-04T15:01:34.860Z",true
