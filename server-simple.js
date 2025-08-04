@@ -113,38 +113,33 @@ function ensureDataDirectory() {
   }
 }
 
-function saveData() {
+async function saveData() {
   try {
-    console.log('Saving data to Excel/CSV format...');
+    console.log('Saving data to database...');
     
-    // Save users to CSV
-    excelDB.saveUsers(users);
+    // Save users
+    for (const user of users) {
+      try {
+        await dbManager.updateUser(user.id, user, 'system');
+      } catch (error) {
+        // If user doesn't exist, create it
+        await dbManager.createUser(user);
+      }
+    }
     
-    // Extract comments from cases and save separately
-    const comments = excelDB.rebuildCommentsFromCases(cases);
-    excelDB.saveComments(comments);
+    // Save cases
+    for (const caseItem of cases) {
+      try {
+        await dbManager.updateCase(caseItem.id, caseItem, 'system');
+      } catch (error) {
+        // If case doesn't exist, create it
+        await dbManager.createCase(caseItem);
+      }
+    }
     
-    // Save cases without embedded comments
-    const casesForExcel = cases.map(caseItem => ({
-      id: caseItem.id,
-      title: caseItem.title,
-      description: caseItem.description,
-      status: caseItem.status,
-      priority: caseItem.priority,
-      assignedTo: caseItem.assignedTo,
-      createdAt: caseItem.createdAt,
-      updatedAt: caseItem.updatedAt,
-      createdBy: caseItem.createdBy
-    }));
-    excelDB.saveCases(casesForExcel);
-    
-    // Save counters
-    const counters = {
-      nextCaseId,
-      nextCommentId,
-      nextUserId: Math.max(...users.map(u => u.id), 0) + 1
-    };
-    excelDB.saveCounters(counters);
+    // Save counters as settings
+    await dbManager.setSetting('nextCaseId', nextCaseId, 'number', 'system');
+    await dbManager.setSetting('nextCommentId', nextCommentId, 'number', 'system');
     
     // Also save JSON versions for backwards compatibility
     ensureDataDirectory();
@@ -161,50 +156,49 @@ function saveData() {
   }
 }
 
-function loadData() {
+async function loadData() {
   try {
-    console.log('Loading data from Excel/CSV format...');
+    console.log('Loading data from database...');
     
-    // Load users from CSV
-    const loadedUsers = excelDB.loadUsers();
+    // Load users
+    const loadedUsers = await dbManager.getUsers();
     if (loadedUsers.length > 0) {
       users = loadedUsers;
-      console.log(`Loaded ${users.length} users from Excel/CSV`);
+      console.log(`Loaded ${users.length} users from database`);
     }
     
-    // Load cases and comments from CSV
-    const loadedCases = excelDB.loadCases();
-    const loadedComments = excelDB.loadComments();
-    
+    // Load cases
+    const loadedCases = await dbManager.getCases();
     if (loadedCases.length > 0) {
-      cases = excelDB.rebuildCasesWithComments(loadedCases, loadedComments);
-      console.log(`Loaded ${cases.length} cases with comments from Excel/CSV`);
+      cases = loadedCases;
+      console.log(`Loaded ${cases.length} cases from database`);
     }
     
-    // Load counters
-    const counters = excelDB.loadCounters();
-    nextCaseId = counters.nextCaseId || 4;
-    nextCommentId = counters.nextCommentId || 1;
+    // Load counters from settings
+    const nextCaseIdSetting = await dbManager.getSetting('nextCaseId');
+    const nextCommentIdSetting = await dbManager.getSetting('nextCommentId');
+    nextCaseId = nextCaseIdSetting ? parseInt(nextCaseIdSetting.value) : 4;
+    nextCommentId = nextCommentIdSetting ? parseInt(nextCommentIdSetting.value) : 1;
     
     // Sync USERS object for compatibility
     syncUsersObject();
     
     console.log(`Loaded counters: nextCaseId=${nextCaseId}, nextCommentId=${nextCommentId}`);
     
-    // Fallback to JSON if CSV files are empty
-    if (users.length === 1 && cases.length === 0) {
-      console.log('CSV files seem empty, trying JSON fallback...');
-      loadDataFromJSON();
+    // Fallback to JSON if database is empty
+    if (users.length === 0 && cases.length === 0) {
+      console.log('Database seems empty, trying JSON fallback...');
+      await loadDataFromJSON();
     }
     
   } catch (error) {
-    console.error('Error loading data from Excel/CSV:', error);
+    console.error('Error loading data from database:', error);
     console.log('Trying JSON fallback...');
-    loadDataFromJSON();
+    await loadDataFromJSON();
   }
 }
 
-function loadDataFromJSON() {
+async function loadDataFromJSON() {
   try {
     ensureDataDirectory();
     
@@ -240,8 +234,8 @@ function loadDataFromJSON() {
     // Sync USERS object for compatibility
     syncUsersObject();
     
-    // Save to Excel format for future use
-    saveData();
+    // Save to database for future use
+    await saveData();
     
   } catch (error) {
     console.error('Error loading data from JSON:', error);
@@ -336,8 +330,10 @@ function canTransitionStatus(fromStatus, toStatus, caseItem = null) {
 }
 
 function getUserFromRequest(req) {
-  // In a real app, extract from JWT token or session
-  const userId = req.headers['x-user-id'] || req.headers['x-username'] || 'admin'; // Default for demo
+  // Get user from headers - no default fallback
+  const userId = req.headers['x-user-id'] || req.headers['x-username'];
+  if (!userId) return null;
+  
   // Try to find by username first, then by old ID for compatibility
   return users.find(u => u.username === userId) || USERS[userId] || null;
 }
@@ -938,21 +934,21 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`Case Workflow Server running on http://localhost:${PORT}`);
-  loadData(); // Load existing data on server start
+  await loadData(); // Load existing data on server start
 });
 
 // Graceful shutdown handlers
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('\nReceived SIGINT. Saving data and shutting down gracefully...');
-  saveData();
+  await saveData();
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('\nReceived SIGTERM. Saving data and shutting down gracefully...');
-  saveData();
+  await saveData();
   process.exit(0);
 });
 

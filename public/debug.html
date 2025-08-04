@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth</title>
+</head>
+<body>
+    <h1>Debug Authentication</h1>
+    <div id="debug-info"></div>
+    <br>
+    <button onclick="clearAuth()">Clear All Auth Data</button>
+    <button onclick="checkAuth()">Check Auth Status</button>
+    <button onclick="goToLogin()">Go to Login</button>
+    <button onclick="goToMain()">Go to Main</button>
+
+    <script>
+        function clearAuth() {
+            localStorage.clear();
+            document.getElementById('debug-info').innerHTML = 'All localStorage cleared';
+        }
+
+        function checkAuth() {
+            const sessionToken = localStorage.getItem('sessionToken');
+            const currentUser = localStorage.getItem('currentUser');
+            const permissions = localStorage.getItem('userPermissions');
+            
+            document.getElementById('debug-info').innerHTML = `
+                <p>SessionToken: ${sessionToken || 'none'}</p>
+                <p>CurrentUser: ${currentUser || 'none'}</p>
+                <p>Permissions: ${permissions || 'none'}</p>
+                <p>Current URL: ${window.location.href}</p>
+            `;
+        }
+
+        function goToLogin() {
+            window.location.href = '/login.html';
+        }
+
+        function goToMain() {
+            window.location.href = '/';
+        }
+
+        // Auto-check on load
+        checkAuth();
+    </script>
+</body>
+</html>

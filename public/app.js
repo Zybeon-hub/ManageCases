@@ -10,71 +10,92 @@ class CaseWorkflowApp {
 
     init() {
         console.log('App initializing...');
-        this.setupEventListeners();
-        // Force show login screen immediately
-        setTimeout(() => {
-            this.showLoginScreen();
-        }, 100);
+        this.checkAuthStatus();
     }
 
     async checkAuthStatus() {
         console.log('Checking auth status...');
-        // For demo, show login screen
-        this.showLoginScreen();
-    }
-
-    showLoginScreen() {
-        console.log('Showing login screen...');
-        const loginSection = document.getElementById('login-section');
-        const appSection = document.getElementById('app-section');
         
-        if (loginSection) {
-            loginSection.classList.remove('hidden');
-            loginSection.style.display = 'flex';
-            console.log('Login section shown');
-        } else {
-            console.error('Login section not found!');
+        // Check if user is already logged in
+        const sessionToken = localStorage.getItem('sessionToken');
+        const currentUser = localStorage.getItem('currentUser');
+        
+        console.log('SessionToken:', sessionToken ? 'exists' : 'none');
+        console.log('CurrentUser:', currentUser ? 'exists' : 'none');
+        
+        if (sessionToken && currentUser) {
+            try {
+                // Parse user data
+                const userData = JSON.parse(currentUser);
+                console.log('Parsed user data:', userData);
+                
+                // Verify session is still valid by checking user info
+                const response = await fetch('/api/auth/user', {
+                    method: 'GET',
+                    headers: {
+                        'X-User-Id': userData.username || userData.id
+                    }
+                });
+                
+                console.log('Auth verification response:', response.status);
+                
+                if (response.ok) {
+                    // Session is valid, show app
+                    const userInfo = await response.json();
+                    console.log('User info received:', userInfo);
+                    this.currentUser = userInfo;
+                    this.userPermissions = userInfo.permissions || [];
+                    this.allowedStatuses = userInfo.allowedStatuses || [];
+                    this.showAppScreen();
+                    this.setupEventListeners();
+                    this.loadCases();
+                    return;
+                } else {
+                    console.log('Auth verification failed, clearing storage');
+                    localStorage.removeItem('sessionToken');
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem('userPermissions');
+                }
+            } catch (error) {
+                console.log('Session verification failed:', error);
+                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userPermissions');
+            }
         }
         
-        if (appSection) {
-            appSection.classList.add('hidden');
-            appSection.style.display = 'none';
+        // No valid session, redirect to login
+        console.log('No valid session, redirecting to login');
+        console.log('Current location:', window.location.href);
+        
+        // Only redirect if not already on login page
+        if (!window.location.pathname.includes('login.html')) {
+            console.log('Redirecting to login page...');
+            window.location.href = '/login.html';
         }
     }
 
     showAppScreen() {
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('app-section').classList.remove('hidden');
+        console.log('Showing app screen...');
+        const authCheck = document.getElementById('auth-check');
+        const appSection = document.getElementById('app-section');
+        
+        if (authCheck) {
+            authCheck.classList.add('hidden');
+            authCheck.style.display = 'none';
+        }
+        
+        if (appSection) {
+            appSection.classList.remove('hidden');
+            appSection.style.display = 'block';
+        }
+        
+        console.log('App screen should now be visible');
     }
 
     setupEventListeners() {
         console.log('Setting up event listeners...');
         
-        // Setup after a small delay to ensure DOM is ready
-        setTimeout(() => {
-            // Login user selection
-            const userOptions = document.querySelectorAll('.user-option');
-            console.log('Found user options:', userOptions.length);
-            
-            userOptions.forEach((option, index) => {
-                console.log(`Setting up option ${index}:`, option.dataset.user);
-                option.addEventListener('click', (e) => {
-                    console.log('User option clicked:', e.currentTarget.dataset.user);
-                    const userId = e.currentTarget.dataset.user;
-                    this.login(userId);
-                });
-                
-                // Also add a simple onclick as backup
-                option.onclick = (e) => {
-                    console.log('Backup onclick triggered:', e.currentTarget.dataset.user);
-                    const userId = e.currentTarget.dataset.user;
-                    this.login(userId);
-                };
-            });
-        }, 200);
-
-        // ...existing code...
-
         // Logout button
         document.getElementById('logout-btn').addEventListener('click', () => {
             this.logout();
@@ -168,11 +189,18 @@ class CaseWorkflowApp {
     }
 
     logout() {
+        // Clear stored authentication data
+        localStorage.removeItem('sessionToken');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('userPermissions');
+        
+        // Reset app state
         this.currentUser = null;
         this.userPermissions = [];
         this.cases = [];
-        this.showLoginScreen();
-        this.showToast('Logged out successfully', 'info');
+        
+        // Redirect to login page
+        window.location.href = '/login.html';
     }
 
     hasPermission(permission) {
@@ -189,11 +217,15 @@ class CaseWorkflowApp {
     }
 
     async makeAuthenticatedRequest(url, options = {}) {
+        if (!this.currentUser) {
+            throw new Error('Not authenticated');
+        }
+        
         return fetch(url, {
             ...options,
             headers: {
                 ...options.headers,
-                'X-User-Id': this.currentUser?.id || 'admin1'
+                'X-User-Id': this.currentUser.username || this.currentUser.id
             }
         });
     }
@@ -620,6 +652,16 @@ window.testLogin = function(userId) {
 // Initialize the app when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing app...');
-    window.app = new CaseWorkflowApp();
-    console.log('App initialized:', window.app);
+    
+    // Add some delay to ensure all elements are ready
+    setTimeout(() => {
+        try {
+            window.app = new CaseWorkflowApp();
+            console.log('App initialized successfully:', window.app);
+        } catch (error) {
+            console.error('Failed to initialize app:', error);
+            // Fallback - redirect to login if app fails to initialize
+            window.location.href = '/login.html';
+        }
+    }, 100);
 });
