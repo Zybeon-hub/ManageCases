@@ -1,0 +1,30 @@
+{
+  "name": "case-workflow-app",
+  "version": "1.0.0",
+  "description": "A case workflow management system with role-based access control",
+  "main": "server-simple.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "start": "node server-simple.js",
+    "dev": "node server-simple.js",
+    "build": "echo 'No build step required'",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "cors": "^2.8.5",
+    "body-parser": "^1.19.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.30.0",
+    "nodemon": "^2.0.15"
+  },
+  "keywords": ["case-management", "workflow", "webapp"],
+  "author": "",
+  "license": "ISC"
+}

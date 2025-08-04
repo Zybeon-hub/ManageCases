@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Workflow Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="login-section" class="login-section">
+            <div class="login-card">
+                <h2>Case Workflow Management System</h2>
+                <p>Please select your role to continue:</p>
+                <div class="user-selection">
+                    <div class="user-option" data-user="lead1">
+                        <div class="user-info">
+                            <strong>John Lead</strong>
+                            <span class="user-role">Lead (Read Only)</span>
+                        </div>
+                    </div>
+                    <div class="user-option" data-user="manager1">
+                        <div class="user-info">
+                            <strong>Jane Manager</strong>
+                            <span class="user-role">Manager (Read/Update Status)</span>
+                        </div>
+                    </div>
+                    <div class="user-option" data-user="admin1">
+                        <div class="user-info">
+                            <strong>Mike Admin</strong>
+                            <span class="user-role">Admin (Full Access)</span>
+                        </div>
+                    </div>
+                    <div class="user-option" data-user="ops1">
+                        <div class="user-info">
+                            <strong>Sarah Ops</strong>
+                            <span class="user-role">Ops (Read/Update/Create)</span>
+                        </div>
+                    </div>
+                    <div class="user-option" data-user="ops2">
+                        <div class="user-info">
+                            <strong>Tom Ops</strong>
+                            <span class="user-role">Ops (Read/Update/Create)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div id="app-section" class="hidden">
+        <header>
+            <div class="header-left">
+                <h1>Case Workflow Management System</h1>
+                <div class="user-info-header">
+                    <span id="current-user-name"></span> - <span id="current-user-role"></span>
+                    <button id="logout-btn" class="btn-secondary">Logout</button>
+                </div>
+            </div>
+            <button id="new-case-btn" class="btn-primary hidden">+ New Case</button>
+        </header>
+
+        <!-- Filters Section -->
+        <div class="filters">
+            <div class="filter-group">
+                <label for="status-filter">Status:</label>
+                <select id="status-filter">
+                    <option value="All">All</option>
+                    <option value="Open">Open</option>
+                    <option value="Assigned">Assigned</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Stage 1 Investigation">Stage 1 Investigation</option>
+                    <option value="Stage 2 Investigation">Stage 2 Investigation</option>
+                    <option value="Stage 3 Investigation">Stage 3 Investigation</option>
+                    <option value="Closed-Approved">Closed-Approved</option>
+                    <option value="Hold">Hold</option>
+                    <option value="Closed-Reject">Closed-Reject</option>
+                    <option value="Reopen">Reopen</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="priority-filter">Priority:</label>
+                <select id="priority-filter">
+                    <option value="All">All</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="assignee-filter">Assigned To:</label>
+                <select id="assignee-filter">
+                    <option value="All">All</option>
+                    <option value="Sarah Ops">Sarah Ops</option>
+                    <option value="Tom Ops">Tom Ops</option>
+                    <option value="Unassigned">Unassigned</option>
+                </select>
+            </div>
+            <button id="refresh-btn" class="btn-secondary">Refresh</button>
+        </div>
+
+        <!-- Cases List -->
+        <div class="cases-section">
+            <h2>Cases</h2>
+            <div id="cases-container" class="cases-grid">
+                <!-- Cases will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading hidden">Loading...</div>
+    </div>
+
+    <!-- Modal for New/Edit Case -->
+    <div id="case-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">New Case</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="case-form">
+                <div class="form-group">
+                    <label for="case-title">Title *</label>
+                    <input type="text" id="case-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="case-description">Description *</label>
+                    <textarea id="case-description" rows="4" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="case-priority">Priority</label>
+                        <select id="case-priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="case-assignee">Assigned To</label>
+                        <select id="case-assignee">
+                            <option value="Unassigned">Unassigned</option>
+                            <option value="Sarah Ops">Sarah Ops</option>
+                            <option value="Tom Ops">Tom Ops</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Case</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Case Details -->
+    <div id="details-modal" class="modal hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="details-title">Case Details</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div id="case-details">
+                <!-- Case details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <script>
+        console.log("Case Workflow App loading...");
+        
+        class CaseWorkflowApp {
+            constructor() {
+                this.cases = [];
+                this.currentUser = null;
+                this.userPermissions = [];
+                this.allowedStatuses = [];
+                this.currentEditingCase = null;
+                this.workflowInfo = null;
+                this.init();
+            }
+
+            init() {
+                console.log('App initializing...');
+                this.setupEventListeners();
+                setTimeout(() => {
+                    this.showLoginScreen();
+                }, 100);
+            }
+
+            showLoginScreen() {
+                console.log('Showing login screen...');
+                const loginSection = document.getElementById('login-section');
+                const appSection = document.getElementById('app-section');
+                
+                if (loginSection) {
+                    loginSection.classList.remove('hidden');
+                    loginSection.style.display = 'flex';
+                } else {
+                    console.error('Login section not found!');
+                }
+                
+                if (appSection) {
+                    appSection.classList.add('hidden');
+                    appSection.style.display = 'none';
+                }
+            }
+
+            showAppScreen() {
+                const loginSection = document.getElementById('login-section');
+                const appSection = document.getElementById('app-section');
+                
+                if (loginSection) {
+                    loginSection.classList.add('hidden');
+                    loginSection.style.display = 'none';
+                }
+                if (appSection) {
+                    appSection.classList.remove('hidden');
+                    appSection.style.display = 'block';
+                }
+            }
+
+            setupEventListeners() {
+                console.log('Setting up event listeners...');
+                
+                setTimeout(() => {
+                    // Login user selection
+                    const userOptions = document.querySelectorAll('.user-option');
+                    console.log('Found user options:', userOptions.length);
+                    
+                    userOptions.forEach((option, index) => {
+                        option.addEventListener('click', (e) => {
+                            const userId = e.currentTarget.dataset.user;
+                            console.log('User clicked:', userId);
+                            this.login(userId);
+                        });
+                    });
+
+                    // Logout button
+                    const logoutBtn = document.getElementById('logout-btn');
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener('click', () => this.logout());
+                    }
+
+                    // New case button
+                    const newCaseBtn = document.getElementById('new-case-btn');
+                    if (newCaseBtn) {
+                        newCaseBtn.addEventListener('click', () => {
+                            if (this.hasPermission('create')) {
+                                this.openNewCaseModal();
+                            } else {
+                                this.showToast('You do not have permission to create cases', 'error');
+                            }
+                        });
+                    }
+
+                    // Filter change events
+                    const statusFilter = document.getElementById('status-filter');
+                    const priorityFilter = document.getElementById('priority-filter');
+                    const assigneeFilter = document.getElementById('assignee-filter');
+                    const refreshBtn = document.getElementById('refresh-btn');
+
+                    if (statusFilter) statusFilter.addEventListener('change', () => this.loadCases());
+                    if (priorityFilter) priorityFilter.addEventListener('change', () => this.loadCases());
+                    if (assigneeFilter) assigneeFilter.addEventListener('change', () => this.loadCases());
+                    if (refreshBtn) refreshBtn.addEventListener('click', () => this.loadCases());
+
+                    // Modal close buttons
+                    document.querySelectorAll('.close').forEach(closeBtn => {
+                        closeBtn.addEventListener('click', (e) => {
+                            this.closeModal(e.target.closest('.modal'));
+                        });
+                    });
+
+                    // Modal backdrop click
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.addEventListener('click', (e) => {
+                            if (e.target === modal) {
+                                this.closeModal(modal);
+                            }
+                        });
+                    });
+
+                    // Case form submission
+                    const caseForm = document.getElementById('case-form');
+                    if (caseForm) {
+                        caseForm.addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            this.submitCaseForm();
+                        });
+                    }
+
+                    // Cancel button
+                    const cancelBtn = document.getElementById('cancel-btn');
+                    if (cancelBtn) {
+                        cancelBtn.addEventListener('click', () => {
+                            this.closeModal(document.getElementById('case-modal'));
+                        });
+                    }
+                }, 200);
+            }
+
+            async login(userId) {
+                console.log('Attempting login for:', userId);
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ userId })
+                    });
+
+                    if (response.ok) {
+                        this.currentUser = await response.json();
+                        this.userPermissions = this.currentUser.permissions;
+                        this.allowedStatuses = this.currentUser.allowedStatuses;
+                        
+                        // Load workflow information
+                        await this.loadWorkflowInfo();
+                        
+                        // Update UI
+                        document.getElementById('current-user-name').textContent = this.currentUser.name;
+                        document.getElementById('current-user-role').textContent = this.currentUser.role;
+                        
+                        // Show/hide buttons based on permissions
+                        this.updateUIForPermissions();
+                        
+                        this.showAppScreen();
+                        this.loadCases();
+                        this.showToast(`Welcome, ${this.currentUser.name}!`, 'success');
+                    } else {
+                        throw new Error('Login failed');
+                    }
+                } catch (error) {
+                    this.showToast('Login failed: ' + error.message, 'error');
+                    console.error('Login error:', error);
+                }
+            }
+
+            async loadWorkflowInfo() {
+                try {
+                    const response = await this.makeAuthenticatedRequest('/api/workflow');
+                    if (response.ok) {
+                        this.workflowInfo = await response.json();
+                        console.log('Workflow info loaded:', this.workflowInfo);
+                    } else {
+                        console.error('Failed to load workflow info');
+                    }
+                } catch (error) {
+                    console.error('Error loading workflow info:', error);
+                }
+            }
+
+            logout() {
+                this.currentUser = null;
+                this.userPermissions = [];
+                this.cases = [];
+                this.showLoginScreen();
+                this.showToast('Logged out successfully', 'info');
+            }
+
+            hasPermission(permission) {
+                return this.userPermissions.includes(permission);
+            }
+
+            updateUIForPermissions() {
+                // Show/hide new case button
+                const newCaseBtn = document.getElementById('new-case-btn');
+                if (newCaseBtn) {
+                    if (this.hasPermission('create')) {
+                        newCaseBtn.classList.remove('hidden');
+                    } else {
+                        newCaseBtn.classList.add('hidden');
+                    }
+                }
+            }
+
+            async makeAuthenticatedRequest(url, options = {}) {
+                return fetch(url, {
+                    ...options,
+                    headers: {
+                        ...options.headers,
+                        'X-User-Id': this.currentUser?.id || 'admin1'
+                    }
+                });
+            }
+
+            async loadCases() {
+                if (!this.currentUser) return;
+                
+                this.showLoading(true);
+                
+                try {
+                    const status = document.getElementById('status-filter').value;
+                    const priority = document.getElementById('priority-filter').value;
+                    const assignedTo = document.getElementById('assignee-filter').value;
+
+                    const params = new URLSearchParams();
+                    if (status !== 'All') params.append('status', status);
+                    if (priority !== 'All') params.append('priority', priority);
+                    if (assignedTo !== 'All') params.append('assignedTo', assignedTo);
+
+                    const response = await this.makeAuthenticatedRequest(`/api/cases?${params}`);
+                    
+                    if (response.ok) {
+                        this.cases = await response.json();
+                        this.renderCases();
+                    } else {
+                        throw new Error('Failed to load cases');
+                    }
+                } catch (error) {
+                    this.showToast('Error loading cases: ' + error.message, 'error');
+                    console.error('Error loading cases:', error);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            renderCases() {
+                const container = document.getElementById('cases-container');
+                
+                if (this.cases.length === 0) {
+                    container.innerHTML = '<div class="no-cases">No cases found matching the current filters.</div>';
+                    return;
+                }
+
+                container.innerHTML = this.cases.map(caseItem => this.createCaseCard(caseItem)).join('');
+            }
+
+            createCaseCard(caseItem) {
+                const formattedDate = new Date(caseItem.updatedAt).toLocaleDateString();
+                const statusClass = caseItem.status.toLowerCase().replace(/\s+/g, '-');
+                const priorityClass = caseItem.priority.toLowerCase();
+
+                // Determine which actions are available
+                const canEdit = this.hasPermission('update_status') || this.currentUser.role === 'ADMIN';
+                const canDelete = this.hasPermission('delete');
+
+                let actionsHtml = '';
+                if (canEdit) {
+                    actionsHtml += `<button class="btn-secondary" onclick="app.editCase(${caseItem.id})">Edit</button>`;
+                }
+                if (canDelete) {
+                    actionsHtml += `<button class="btn-danger" onclick="app.deleteCase(${caseItem.id})">Delete</button>`;
+                }
+
+                return `
+                    <div class="case-card" data-case-id="${caseItem.id}">
+                        <div class="case-header">
+                            <div>
+                                <div class="case-title">${this.escapeHtml(caseItem.title)}</div>
+                                <div class="case-id">Case #${caseItem.id}</div>
+                            </div>
+                            <div class="case-actions">
+                                ${actionsHtml}
+                            </div>
+                        </div>
+                        <div class="case-description">${this.escapeHtml(caseItem.description)}</div>
+                        <div class="case-meta">
+                            <div>
+                                <span class="status-badge status-${statusClass}">${caseItem.status}</span>
+                                <span class="priority-badge priority-${priorityClass}">${caseItem.priority}</span>
+                            </div>
+                            <div>Updated: ${formattedDate}</div>
+                        </div>
+                        <div class="case-assignee">
+                            <strong>Assigned to:</strong> ${this.escapeHtml(caseItem.assignedTo)}
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button class="btn-primary" onclick="app.viewCaseDetails(${caseItem.id})">View Details</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            openNewCaseModal() {
+                this.currentEditingCase = null;
+                document.getElementById('modal-title').textContent = 'New Case';
+                document.getElementById('case-form').reset();
+                
+                // Remove any existing status field from previous edit
+                const existingStatusField = document.getElementById('case-status');
+                if (existingStatusField) {
+                    existingStatusField.closest('.form-group').remove();
+                }
+                
+                this.showModal(document.getElementById('case-modal'));
+            }
+
+            async editCase(caseId) {
+                try {
+                    const response = await this.makeAuthenticatedRequest(`/api/cases/${caseId}`);
+                    
+                    if (response.ok) {
+                        const caseItem = await response.json();
+                        
+                        this.currentEditingCase = caseItem;
+                        document.getElementById('modal-title').textContent = 'Edit Case';
+                        document.getElementById('case-title').value = caseItem.title;
+                        document.getElementById('case-description').value = caseItem.description;
+                        document.getElementById('case-priority').value = caseItem.priority;
+                        document.getElementById('case-assignee').value = caseItem.assignedTo;
+                        
+                        // Add status field if user can update status
+                        this.updateEditFormForPermissions(caseItem);
+                        
+                        this.showModal(document.getElementById('case-modal'));
+                    } else {
+                        throw new Error('Failed to load case');
+                    }
+                } catch (error) {
+                    this.showToast('Error loading case details: ' + error.message, 'error');
+                    console.error('Error loading case:', error);
+                }
+            }
+
+            updateEditFormForPermissions(caseItem) {
+                console.log('updateEditFormForPermissions called for case:', caseItem);
+                console.log('Current user:', this.currentUser);
+                console.log('User permissions:', this.userPermissions);
+                console.log('Has update_status permission:', this.hasPermission('update_status'));
+                
+                // Remove any existing status field first
+                const existingStatusField = document.getElementById('case-status');
+                if (existingStatusField) {
+                    existingStatusField.closest('.form-group').remove();
+                }
+
+                // Add status field if user can update status
+                if (this.hasPermission('update_status')) {
+                    console.log('Adding status dropdown to edit form');
+                    const formRow = document.querySelector('.form-row');
+                    
+                    if (formRow && this.workflowInfo) {
+                        // Get valid next statuses from workflow info
+                        const currentStatus = caseItem.status;
+                        let validNextStatuses = [];
+                        
+                        if (currentStatus === 'Hold') {
+                            // For Hold status, get dynamic transitions based on previous status
+                            if (caseItem.previousStatus) {
+                                const allowedFromPrevious = this.workflowInfo.statuses[caseItem.previousStatus] || [];
+                                validNextStatuses = [caseItem.previousStatus, ...allowedFromPrevious];
+                            } else {
+                                validNextStatuses = ['Assigned', 'In Progress'];
+                            }
+                        } else {
+                            validNextStatuses = this.workflowInfo.statuses[currentStatus] || [];
+                        }
+                        
+                        console.log(`Current status: ${currentStatus}, Valid next statuses:`, validNextStatuses);
+                        
+                        // Create status field with only valid next statuses
+                        const statusGroup = document.createElement('div');
+                        statusGroup.className = 'form-group';
+                        
+                        let options = `<option value="${currentStatus}" selected>${currentStatus} (Current)</option>`;
+                        validNextStatuses.forEach(status => {
+                            if (status !== currentStatus) {  // Don't duplicate current status
+                                options += `<option value="${status}">${status}</option>`;
+                            }
+                        });
+                        
+                        statusGroup.innerHTML = `
+                            <label for="case-status">Status</label>
+                            <select id="case-status">
+                                ${options}
+                            </select>
+                        `;
+                        
+                        // Insert before the existing form row
+                        formRow.parentNode.insertBefore(statusGroup, formRow);
+                        console.log('Status dropdown added successfully');
+                    }
+                } else {
+                    console.log('User does not have update_status permission, status dropdown not added');
+                }
+            }
+
+            async deleteCase(caseId) {
+                if (!this.hasPermission('delete')) {
+                    this.showToast('You do not have permission to delete cases', 'error');
+                    return;
+                }
+
+                if (!confirm('Are you sure you want to delete this case?')) {
+                    return;
+                }
+
+                try {
+                    const response = await this.makeAuthenticatedRequest(`/api/cases/${caseId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        this.showToast('Case deleted successfully', 'success');
+                        this.loadCases();
+                    } else {
+                        throw new Error('Failed to delete case');
+                    }
+                } catch (error) {
+                    this.showToast('Error deleting case: ' + error.message, 'error');
+                    console.error('Error deleting case:', error);
+                }
+            }
+
+            async viewCaseDetails(caseId) {
+                try {
+                    const response = await this.makeAuthenticatedRequest(`/api/cases/${caseId}`);
+                    
+                    if (response.ok) {
+                        const caseItem = await response.json();
+                        this.renderCaseDetails(caseItem);
+                        this.showModal(document.getElementById('details-modal'));
+                    } else {
+                        throw new Error('Failed to load case details');
+                    }
+                } catch (error) {
+                    this.showToast('Error loading case details: ' + error.message, 'error');
+                    console.error('Error loading case details:', error);
+                }
+            }
+
+            renderCaseDetails(caseItem) {
+                const formattedCreated = new Date(caseItem.createdAt).toLocaleString();
+                const formattedUpdated = new Date(caseItem.updatedAt).toLocaleString();
+                const statusClass = caseItem.status.toLowerCase().replace(/\s+/g, '-');
+                const priorityClass = caseItem.priority.toLowerCase();
+
+                const detailsContainer = document.getElementById('case-details');
+                detailsContainer.innerHTML = `
+                    <div class="case-details-content">
+                        <div class="details-header">
+                            <div class="details-title">${this.escapeHtml(caseItem.title)}</div>
+                            <div class="case-id">Case #${caseItem.id}</div>
+                        </div>
+                        
+                        <div class="details-meta">
+                            <div class="meta-item">
+                                <div class="meta-label">Status</div>
+                                <div class="meta-value">
+                                    <span class="status-badge status-${statusClass}">${caseItem.status}</span>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Priority</div>
+                                <div class="meta-value">
+                                    <span class="priority-badge priority-${priorityClass}">${caseItem.priority}</span>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Assigned To</div>
+                                <div class="meta-value">${this.escapeHtml(caseItem.assignedTo)}</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Created</div>
+                                <div class="meta-value">${formattedCreated}</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Last Updated</div>
+                                <div class="meta-value">${formattedUpdated}</div>
+                            </div>
+                        </div>
+
+                        <div class="meta-item">
+                            <div class="meta-label">Description</div>
+                            <div class="meta-value">${this.escapeHtml(caseItem.description)}</div>
+                        </div>
+
+                        <div class="comments-section">
+                            <h4>Comments (${caseItem.comments.length})</h4>
+                            <div class="comments-list">
+                                ${caseItem.comments.map(comment => this.createCommentHtml(comment)).join('')}
+                            </div>
+                            
+                            <div class="add-comment">
+                                <textarea id="new-comment-text" placeholder="Add a comment..."></textarea>
+                                <button class="btn-primary" onclick="app.addComment(${caseItem.id})">Add Comment</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            createCommentHtml(comment) {
+                const formattedTime = new Date(comment.timestamp).toLocaleString();
+                return `
+                    <div class="comment">
+                        <div class="comment-header">
+                            <span class="comment-author">${this.escapeHtml(comment.author)}</span>
+                            <span class="comment-time">${formattedTime}</span>
+                        </div>
+                        <div class="comment-text">${this.escapeHtml(comment.text)}</div>
+                    </div>
+                `;
+            }
+
+            async addComment(caseId) {
+                const commentText = document.getElementById('new-comment-text').value.trim();
+                if (!commentText) {
+                    this.showToast('Please enter a comment', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await this.makeAuthenticatedRequest(`/api/cases/${caseId}/comments`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: commentText
+                        })
+                    });
+
+                    if (response.ok) {
+                        this.showToast('Comment added successfully', 'success');
+                        document.getElementById('new-comment-text').value = '';
+                        this.viewCaseDetails(caseId);
+                    } else {
+                        throw new Error('Failed to add comment');
+                    }
+                } catch (error) {
+                    this.showToast('Error adding comment: ' + error.message, 'error');
+                    console.error('Error adding comment:', error);
+                }
+            }
+
+            async submitCaseForm() {
+                const title = document.getElementById('case-title').value.trim();
+                const description = document.getElementById('case-description').value.trim();
+                const priority = document.getElementById('case-priority').value;
+                const assignedTo = document.getElementById('case-assignee').value;
+                
+                // Get status if dropdown exists (for users with update_status permission)
+                const statusField = document.getElementById('case-status');
+                const status = statusField ? statusField.value : undefined;
+
+                if (!title || !description) {
+                    this.showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                const caseData = {
+                    title,
+                    description,
+                    priority,
+                    assignedTo
+                };
+                
+                // Only include status if user can update it and a value was selected
+                if (status && this.hasPermission('update_status')) {
+                    caseData.status = status;
+                    console.log('Including status in update:', status);
+                }
+
+                try {
+                    let response;
+                    if (this.currentEditingCase) {
+                        response = await this.makeAuthenticatedRequest(`/api/cases/${this.currentEditingCase.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(caseData)
+                        });
+                    } else {
+                        response = await this.makeAuthenticatedRequest('/api/cases', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(caseData)
+                        });
+                    }
+
+                    if (response.ok) {
+                        const updatedCase = await response.json();
+                        const message = this.currentEditingCase ? 'Case updated successfully' : 'Case created successfully';
+                        this.showToast(message, 'success');
+                        this.closeModal(document.getElementById('case-modal'));
+                        this.loadCases();
+                        
+                        // If details modal is open for the updated case, refresh it
+                        const detailsModal = document.getElementById('details-modal');
+                        if (this.currentEditingCase && !detailsModal.classList.contains('hidden')) {
+                            this.showCaseDetails(updatedCase || this.currentEditingCase);
+                        }
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to save case');
+                    }
+                } catch (error) {
+                    this.showToast(`Error saving case: ${error.message}`, 'error');
+                    console.error('Error saving case:', error);
+                }
+            }
+
+            showModal(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            closeModal(modal) {
+                modal.classList.remove('show');
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            showLoading(show) {
+                const loading = document.getElementById('loading');
+                if (loading) {
+                    if (show) {
+                        loading.classList.remove('hidden');
+                    } else {
+                        loading.classList.add('hidden');
+                    }
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+
+                let container = document.getElementById('toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toast-container';
+                    container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1100;';
+                    document.body.appendChild(container);
+                }
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing app...');
+            window.app = new CaseWorkflowApp();
+            console.log('App initialized:', window.app);
+        });
+    </script>
+        </div> <!-- End app-section -->
+    </div>
+</body>
+</html>

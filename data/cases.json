@@ -1,0 +1,127 @@
+[
+  {
+    "id": 1,
+    "title": "Case1",
+    "description": "Case1",
+    "status": "Open",
+    "priority": "High",
+    "assignedTo": "Sarah Ops",
+    "createdAt": "2025-07-28T00:00:00.000Z",
+    "updatedAt": "2025-08-01T10:42:13.442Z",
+    "createdBy": "admin1",
+    "comments": [
+      {
+        "id": 1,
+        "text": "Initial complaint received via email",
+        "timestamp": "2025-07-28T00:00:00.000Z",
+        "author": "System"
+      },
+      {
+        "id": 3,
+        "text": "Title updated; Description updated",
+        "timestamp": "2025-08-01T10:42:13.442Z",
+        "author": "Mike Admin"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Case2",
+    "description": "Case2",
+    "status": "In Progress",
+    "priority": "Medium",
+    "assignedTo": "Tom Ops",
+    "createdAt": "2025-07-29T00:00:00.000Z",
+    "updatedAt": "2025-08-01T10:42:26.421Z",
+    "createdBy": "manager1",
+    "comments": [
+      {
+        "id": 1,
+        "text": "Reviewing customer account",
+        "timestamp": "2025-07-29T00:00:00.000Z",
+        "author": "Tom Ops"
+      },
+      {
+        "id": 2,
+        "text": "Found discrepancy in billing system",
+        "timestamp": "2025-07-30T00:00:00.000Z",
+        "author": "Tom Ops"
+      },
+      {
+        "id": 4,
+        "text": "Title updated; Description updated",
+        "timestamp": "2025-08-01T10:42:26.421Z",
+        "author": "Mike Admin"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "case3",
+    "description": "Case3",
+    "status": "Closed-Approved",
+    "priority": "Low",
+    "assignedTo": "Sarah Ops",
+    "createdAt": "2025-07-26T00:00:00.000Z",
+    "updatedAt": "2025-08-01T10:42:39.898Z",
+    "createdBy": "ops1",
+    "comments": [
+      {
+        "id": 1,
+        "text": "Password reset sent to customer",
+        "timestamp": "2025-07-26T00:00:00.000Z",
+        "author": "Sarah Ops"
+      },
+      {
+        "id": 2,
+        "text": "Customer confirmed access restored",
+        "timestamp": "2025-07-27T00:00:00.000Z",
+        "author": "Sarah Ops"
+      },
+      {
+        "id": 5,
+        "text": "Title updated; Description updated",
+        "timestamp": "2025-08-01T10:42:39.898Z",
+        "author": "Mike Admin"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Case4",
+    "description": "Case4",
+    "status": "Open",
+    "priority": "Medium",
+    "assignedTo": "Unassigned",
+    "createdAt": "2025-08-01T10:56:46.693Z",
+    "updatedAt": "2025-08-01T10:56:46.693Z",
+    "createdBy": "admin1",
+    "comments": [
+      {
+        "id": 6,
+        "text": "Case created by Mike Admin",
+        "timestamp": "2025-08-01T10:56:46.693Z",
+        "author": "Mike Admin"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Case5",
+    "description": "Case5",
+    "status": "Open",
+    "priority": "Medium",
+    "assignedTo": "Unassigned",
+    "createdAt": "2025-08-04T05:37:51.058Z",
+    "updatedAt": "2025-08-04T05:37:51.058Z",
+    "createdBy": "ops1",
+    "comments": [
+      {
+        "id": 7,
+        "text": "Case created by Sarah Ops",
+        "timestamp": "2025-08-04T05:37:51.058Z",
+        "author": "Sarah Ops"
+      }
+    ]
+  }
+]
