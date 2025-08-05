@@ -571,42 +571,56 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      const body = await parseJSON(req);
-      if (!body.username || !body.name || !body.role || !body.password) {
-        sendError(res, 'Missing required fields: username, name, role, password', 400);
-        return;
-      }
+      parseBody(req, async (err, body) => {
+        if (err) {
+          sendError(res, 'Invalid JSON', 400);
+          return;
+        }
 
-      // Check if username already exists
-      if (users.find(u => u.username === body.username)) {
-        sendError(res, 'Username already exists', 400);
-        return;
-      }
+        if (!body.username || !body.name || !body.role || !body.password) {
+          sendError(res, 'Missing required fields: username, name, role, password', 400);
+          return;
+        }
 
-      try {
-        // Create new user object
-        const newUser = {
-          id: Date.now(),
-          username: body.username,
-          name: body.name,
-          email: body.email || '',
-          role: body.role,
-          password: body.password // In production, hash this password
-        };
+        // Check if username already exists
+        if (users.find(u => u.username === body.username)) {
+          sendError(res, 'Username already exists', 400);
+          return;
+        }
 
-        // Add to users array and save
-        users.push(newUser);
-        await saveData();
-        syncUsersObject();
+        try {
+          // Create new user object
+          const newUser = {
+            id: Date.now(),
+            username: body.username,
+            name: body.name,
+            email: body.email || '',
+            role: body.role,
+            password: body.password, // In production, hash this password
+            isActive: true, // Add isActive flag
+            createdAt: new Date().toISOString(),
+            createdBy: user.username
+          };
 
-        // Log the action
-        logAuditAction(user.username, 'create_user', { targetUser: newUser.username, role: newUser.role });
+          console.log('Creating new user:', { username: newUser.username, role: newUser.role });
 
-        sendJSON(res, { success: true, user: { id: newUser.id, username: newUser.username, name: newUser.name, role: newUser.role } });
-      } catch (error) {
-        console.error('Error creating user:', error);
-        sendError(res, 'Failed to create user', 500);
-      }
+          // Add to users array and save
+          users.push(newUser);
+          console.log(`Total users after adding: ${users.length}`);
+          
+          await saveData();
+          syncUsersObject();
+
+          // Log the action
+          logAuditAction(user.username, 'create_user', { targetUser: newUser.username, role: newUser.role });
+
+          console.log('User created successfully:', newUser.username);
+          sendJSON(res, { success: true, user: { id: newUser.id, username: newUser.username, name: newUser.name, role: newUser.role } });
+        } catch (error) {
+          console.error('Error creating user:', error);
+          sendError(res, 'Failed to create user', 500);
+        }
+      });
       return;
     }
 
@@ -619,51 +633,60 @@ const server = http.createServer(async (req, res) => {
       }
 
       const userId = parseInt(pathname.split('/')[3]);
-      const body = await parseJSON(req);
-
-      const existingUser = users.find(u => u.id === userId);
-      if (!existingUser) {
-        sendError(res, 'User not found', 404);
-        return;
-      }
-
-      // Check if new username conflicts with other users
-      if (body.username && body.username !== existingUser.username) {
-        if (users.find(u => u.username === body.username && u.id !== userId)) {
-          sendError(res, 'Username already exists', 400);
+      
+      parseBody(req, async (err, body) => {
+        if (err) {
+          sendError(res, 'Invalid JSON', 400);
           return;
         }
-      }
 
-      try {
-        const updateData = {
-          username: body.username || existingUser.username,
-          name: body.name || existingUser.name,
-          email: body.email || existingUser.email,
-          role: body.role || existingUser.role
-        };
-
-        // Only update password if provided
-        if (body.password) {
-          updateData.password = body.password; // In production, hash this password
+        const existingUser = users.find(u => u.id === userId);
+        if (!existingUser) {
+          sendError(res, 'User not found', 404);
+          return;
         }
 
-        // Update in-memory users array
-        const userIndex = users.findIndex(u => u.id === userId);
-        if (userIndex !== -1) {
-          users[userIndex] = { ...users[userIndex], ...updateData };
-          await saveData();
-          syncUsersObject();
-          
-          // Log the action
-          logAuditAction(user.username, 'update_user', { targetUser: updateData.username, changes: Object.keys(updateData) });
+        // Check if new username conflicts with other users
+        if (body.username && body.username !== existingUser.username) {
+          if (users.find(u => u.username === body.username && u.id !== userId)) {
+            sendError(res, 'Username already exists', 400);
+            return;
+          }
         }
 
-        sendJSON(res, { success: true, user: { id: updatedUser.id, username: updatedUser.username, name: updatedUser.name, role: updatedUser.role } });
-      } catch (error) {
-        console.error('Error updating user:', error);
-        sendError(res, 'Failed to update user', 500);
-      }
+        try {
+          const updateData = {
+            username: body.username || existingUser.username,
+            name: body.name || existingUser.name,
+            email: body.email || existingUser.email,
+            role: body.role || existingUser.role
+          };
+
+          // Only update password if provided
+          if (body.password) {
+            updateData.password = body.password; // In production, hash this password
+          }
+
+          // Update in-memory users array
+          const userIndex = users.findIndex(u => u.id === userId);
+          if (userIndex !== -1) {
+            users[userIndex] = { ...users[userIndex], ...updateData };
+            await saveData();
+            syncUsersObject();
+            
+            // Log the action
+            logAuditAction(user.username, 'update_user', { targetUser: updateData.username, changes: Object.keys(updateData) });
+            
+            console.log('User updated successfully:', users[userIndex].username);
+            sendJSON(res, { success: true, user: { id: users[userIndex].id, username: users[userIndex].username, name: users[userIndex].name, role: users[userIndex].role } });
+          } else {
+            sendError(res, 'User not found', 404);
+          }
+        } catch (error) {
+          console.error('Error updating user:', error);
+          sendError(res, 'Failed to update user', 500);
+        }
+      });
       return;
     }
 

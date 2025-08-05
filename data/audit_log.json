@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": 1754407236838,
+    "timestamp": "2025-08-05T15:20:36.838Z",
+    "username": "testuser3",
+    "action": "delete_user",
+    "details": {
+      "targetUser": "opsuser",
+      "role": "OPS"
+    }
+  },
+  {
+    "id": 1754407737348,
+    "timestamp": "2025-08-05T15:28:57.348Z",
+    "username": "testuser3",
+    "action": "update_user",
+    "details": {
+      "targetUser": "testuser3",
+      "changes": [
+        "username",
+        "name",
+        "email",
+        "role",
+        "password"
+      ]
+    }
+  },
+  {
+    "id": 1754407800987,
+    "timestamp": "2025-08-05T15:30:00.987Z",
+    "username": "testuser3",
+    "action": "create_user",
+    "details": {
+      "targetUser": "IAM",
+      "role": "ADMIN"
+    }
+  }
+]

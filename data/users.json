@@ -2,7 +2,7 @@
   {
     "id": 1,
     "username": "testuser3",
-    "password": "password123",
+    "password": "iam@123",
     "name": "Test User 3",
     "email": "test3@example.com",
     "role": "ADMIN",
@@ -10,23 +10,14 @@
     "isActive": true
   },
   {
-    "id": 2,
-    "username": "opsuser",
-    "password": "password123",
-    "name": "Ops User",
-    "email": "ops@example.com",
-    "role": "OPS",
-    "createdAt": "2025-08-05T10:42:03.580Z",
-    "isActive": true
-  },
-  {
-    "id": 3,
-    "username": "leaduser",
-    "password": "password123",
-    "name": "Lead User",
-    "email": "lead@example.com",
-    "role": "LEAD",
-    "createdAt": "2025-08-05T10:45:53.169Z",
-    "isActive": true
+    "id": 1754407800976,
+    "username": "IAM",
+    "name": "IAM",
+    "email": "IAM@IAM.com",
+    "role": "ADMIN",
+    "password": "iam@123",
+    "isActive": true,
+    "createdAt": "2025-08-05T15:30:00.976Z",
+    "createdBy": "testuser3"
   }
 ]
