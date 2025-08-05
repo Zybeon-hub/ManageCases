@@ -3,14 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
-const DatabaseManager = require('./database-manager');
 
 const PORT = process.env.PORT || 3000;
 
-// Initialize Database Manager
-const dbManager = new DatabaseManager();
-
-// Data file paths (for backwards compatibility)
+// Data file paths
 const DATA_DIR = path.join(__dirname, 'data');
 const CASES_FILE = path.join(DATA_DIR, 'cases.json');
 const COUNTERS_FILE = path.join(DATA_DIR, 'counters.json');
@@ -110,6 +106,35 @@ function ensureDataDirectory() {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     console.log('Created data directory:', DATA_DIR);
   }
+  
+  // Create default files if they don't exist
+  if (!fs.existsSync(USERS_FILE)) {
+    fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2));
+    console.log('Created empty users.json file');
+  }
+  
+  if (!fs.existsSync(CASES_FILE)) {
+    fs.writeFileSync(CASES_FILE, JSON.stringify([], null, 2));
+    console.log('Created empty cases.json file');
+  }
+  
+  if (!fs.existsSync(COMMENTS_FILE)) {
+    fs.writeFileSync(COMMENTS_FILE, JSON.stringify([], null, 2));
+    console.log('Created empty comments.json file');
+  }
+  
+  if (!fs.existsSync(AUDIT_FILE)) {
+    fs.writeFileSync(AUDIT_FILE, JSON.stringify([], null, 2));
+    console.log('Created empty audit_log.json file');
+  }
+  
+  if (!fs.existsSync(COUNTERS_FILE)) {
+    fs.writeFileSync(COUNTERS_FILE, JSON.stringify({
+      nextCaseId: 1,
+      nextCommentId: 1
+    }, null, 2));
+    console.log('Created counters.json file');
+  }
 }
 
 async function saveData() {
@@ -193,6 +218,26 @@ async function loadDataFromJSON() {
       nextCaseId = counters.nextCaseId || 4;
       nextCommentId = counters.nextCommentId || 3;
       console.log(`Loaded counters from JSON: nextCaseId=${nextCaseId}, nextCommentId=${nextCommentId}`);
+    }
+    
+    // Load comments from JSON if file exists
+    if (fs.existsSync(COMMENTS_FILE)) {
+      const commentsData = fs.readFileSync(COMMENTS_FILE, 'utf8');
+      const jsonComments = JSON.parse(commentsData);
+      if (Array.isArray(jsonComments) && jsonComments.length > 0) {
+        comments = jsonComments;
+        console.log(`Loaded ${comments.length} comments from JSON backup`);
+      }
+    }
+    
+    // Load audit log from JSON if file exists
+    if (fs.existsSync(AUDIT_FILE)) {
+      const auditData = fs.readFileSync(AUDIT_FILE, 'utf8');
+      const jsonAudit = JSON.parse(auditData);
+      if (Array.isArray(jsonAudit) && jsonAudit.length > 0) {
+        auditLog = jsonAudit;
+        console.log(`Loaded ${auditLog.length} audit log entries from JSON backup`);
+      }
     }
     
     // Sync USERS object for compatibility
@@ -539,17 +584,23 @@ const server = http.createServer(async (req, res) => {
       }
 
       try {
-        const newUser = await dbManager.createUser({
+        // Create new user object
+        const newUser = {
+          id: Date.now(),
           username: body.username,
           name: body.name,
           email: body.email || '',
           role: body.role,
           password: body.password // In production, hash this password
-        });
+        };
 
-        // Update in-memory users array
+        // Add to users array and save
         users.push(newUser);
+        await saveData();
         syncUsersObject();
+
+        // Log the action
+        logAuditAction(user.username, 'create_user', { targetUser: newUser.username, role: newUser.role });
 
         sendJSON(res, { success: true, user: { id: newUser.id, username: newUser.username, name: newUser.name, role: newUser.role } });
       } catch (error) {
@@ -597,13 +648,15 @@ const server = http.createServer(async (req, res) => {
           updateData.password = body.password; // In production, hash this password
         }
 
-        const updatedUser = await dbManager.updateUser(userId, updateData, user.username);
-
         // Update in-memory users array
         const userIndex = users.findIndex(u => u.id === userId);
         if (userIndex !== -1) {
           users[userIndex] = { ...users[userIndex], ...updateData };
+          await saveData();
           syncUsersObject();
+          
+          // Log the action
+          logAuditAction(user.username, 'update_user', { targetUser: updateData.username, changes: Object.keys(updateData) });
         }
 
         sendJSON(res, { success: true, user: { id: updatedUser.id, username: updatedUser.username, name: updatedUser.name, role: updatedUser.role } });
@@ -640,13 +693,16 @@ const server = http.createServer(async (req, res) => {
       }
 
       try {
-        await dbManager.deleteUser(userId, user.username);
-
         // Remove from in-memory users array
         const userIndex = users.findIndex(u => u.id === userId);
         if (userIndex !== -1) {
+          const deletedUser = users[userIndex];
           users.splice(userIndex, 1);
+          await saveData();
           syncUsersObject();
+          
+          // Log the action
+          logAuditAction(user.username, 'delete_user', { targetUser: deletedUser.username, role: deletedUser.role });
         }
 
         sendJSON(res, { success: true, message: 'User deleted successfully' });
@@ -1024,3 +1080,27 @@ setInterval(() => {
   saveData();
   console.log('Periodic data backup completed');
 }, 5 * 60 * 1000);
+
+// Audit log function
+function logAuditAction(username, action, details = {}) {
+  try {
+    const logEntry = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      username: username,
+      action: action,
+      details: details
+    };
+    
+    auditLog.push(logEntry);
+    
+    // Keep only last 1000 entries to prevent memory issues
+    if (auditLog.length > 1000) {
+      auditLog = auditLog.slice(-1000);
+    }
+    
+    console.log(`Audit: ${username} performed ${action}`, details);
+  } catch (error) {
+    console.error('Error logging audit action:', error);
+  }
+}
