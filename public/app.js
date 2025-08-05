@@ -5,6 +5,7 @@ class CaseWorkflowApp {
         this.userPermissions = [];
         this.allowedStatuses = [];
         this.currentEditingCase = null;
+        this.allUsers = []; // Store all users for dropdowns
         this.init();
     }
 
@@ -48,6 +49,8 @@ class CaseWorkflowApp {
                     this.allowedStatuses = userInfo.allowedStatuses || [];
                     this.showAppScreen();
                     this.setupEventListeners();
+                    this.updateUIForPermissions(); // Ensure UI is updated for permissions
+                    await this.loadUsers(); // Load users for dropdowns first
                     this.loadCases();
                     return;
                 } else {
@@ -108,6 +111,27 @@ class CaseWorkflowApp {
             } else {
                 this.showToast('You do not have permission to create cases', 'error');
             }
+        });
+
+        // Manage users button (admin only)
+        document.getElementById('manage-users-btn').addEventListener('click', () => {
+            this.showUserManagement();
+        });
+
+        // Add user button
+        document.getElementById('add-user-btn').addEventListener('click', () => {
+            this.openNewUserModal();
+        });
+
+        // Refresh users button
+        document.getElementById('refresh-users-btn').addEventListener('click', () => {
+            this.loadAndDisplayUsers();
+        });
+
+        // User form submit
+        document.getElementById('user-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveUser();
         });
 
         // Filter change events
@@ -208,11 +232,31 @@ class CaseWorkflowApp {
     }
 
     updateUIForPermissions() {
+        console.log('updateUIForPermissions called');
+        console.log('Current user:', this.currentUser);
+        console.log('User role:', this.currentUser?.role);
+        
         // Show/hide new case button
         if (this.hasPermission('create')) {
             document.getElementById('new-case-btn').classList.remove('hidden');
         } else {
             document.getElementById('new-case-btn').classList.add('hidden');
+        }
+
+        // Show/hide manage users button (admin only)
+        const manageUsersBtn = document.getElementById('manage-users-btn');
+        console.log('Manage users button element:', manageUsersBtn);
+        
+        if (this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.role === 'ADMIN')) {
+            console.log('User is admin, showing manage users button');
+            if (manageUsersBtn) {
+                manageUsersBtn.classList.remove('hidden');
+            }
+        } else {
+            console.log('User is not admin, hiding manage users button');
+            if (manageUsersBtn) {
+                manageUsersBtn.classList.add('hidden');
+            }
         }
     }
 
@@ -637,6 +681,243 @@ class CaseWorkflowApp {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // User management methods
+    async loadUsers() {
+        try {
+            const response = await this.makeAuthenticatedRequest('/api/users');
+            if (response.ok) {
+                this.allUsers = await response.json();
+                this.updateUserDropdowns();
+                return this.allUsers;
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            this.showToast('Failed to load users', 'error');
+        }
+        return [];
+    }
+
+    updateUserDropdowns() {
+        // Update assignee filter dropdown
+        const assigneeFilter = document.getElementById('assignee-filter');
+        if (assigneeFilter) {
+            const currentValue = assigneeFilter.value;
+            assigneeFilter.innerHTML = '<option value="All">All</option>';
+            
+            this.allUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username || user.name;
+                option.textContent = user.name || user.username;
+                assigneeFilter.appendChild(option);
+            });
+            
+            // Add unassigned option
+            const unassignedOption = document.createElement('option');
+            unassignedOption.value = 'Unassigned';
+            unassignedOption.textContent = 'Unassigned';
+            assigneeFilter.appendChild(unassignedOption);
+            
+            // Restore previous selection
+            assigneeFilter.value = currentValue;
+        }
+
+        // Update case assignee dropdown
+        const caseAssignee = document.getElementById('case-assignee');
+        if (caseAssignee) {
+            const currentValue = caseAssignee.value;
+            caseAssignee.innerHTML = '<option value="Unassigned">Unassigned</option>';
+            
+            this.allUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username || user.name;
+                option.textContent = user.name || user.username;
+                caseAssignee.appendChild(option);
+            });
+            
+            // Restore previous selection
+            caseAssignee.value = currentValue;
+        }
+    }
+
+    // User Management UI methods
+    showUserManagement() {
+        if (!this.currentUser || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'ADMIN')) {
+            this.showToast('You do not have permission to manage users', 'error');
+            return;
+        }
+        
+        this.loadAndDisplayUsers();
+        this.showModal(document.getElementById('user-modal'));
+    }
+
+    async loadAndDisplayUsers() {
+        const usersList = document.getElementById('users-list');
+        usersList.innerHTML = '<div class="loading">Loading users...</div>';
+        
+        try {
+            const users = await this.loadUsers();
+            this.displayUsersList(users);
+        } catch (error) {
+            usersList.innerHTML = '<div class="error">Failed to load users</div>';
+        }
+    }
+
+    displayUsersList(users) {
+        const usersList = document.getElementById('users-list');
+        
+        if (!users || users.length === 0) {
+            usersList.innerHTML = '<div class="no-data">No users found</div>';
+            return;
+        }
+
+        const usersHtml = users.map(user => `
+            <div class="user-item" data-user-id="${user.id}">
+                <div class="user-info">
+                    <div class="user-name">${this.escapeHtml(user.name || user.username)}</div>
+                    <div class="user-details">
+                        <span class="user-username">@${this.escapeHtml(user.username)}</span>
+                        <span class="user-role badge role-${user.role}">${user.role}</span>
+                        <span class="user-email">${this.escapeHtml(user.email || 'No email')}</span>
+                    </div>
+                </div>
+                <div class="user-actions">
+                    <button class="btn-small btn-secondary edit-user-btn" data-user-id="${user.id}">Edit</button>
+                    ${user.role !== 'admin' ? `<button class="btn-small btn-danger delete-user-btn" data-user-id="${user.id}">Delete</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        usersList.innerHTML = usersHtml;
+
+        // Add event listeners
+        usersList.querySelectorAll('.edit-user-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.dataset.userId;
+                this.editUser(userId);
+            });
+        });
+
+        usersList.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.dataset.userId;
+                this.deleteUser(userId);
+            });
+        });
+    }
+
+    openNewUserModal() {
+        document.getElementById('user-form-title').textContent = 'Add New User';
+        document.getElementById('user-form').reset();
+        document.getElementById('user-form').dataset.mode = 'create';
+        delete document.getElementById('user-form').dataset.userId;
+        this.showModal(document.getElementById('user-form-modal'));
+    }
+
+    async editUser(userId) {
+        const user = this.allUsers.find(u => u.id == userId);
+        if (!user) {
+            this.showToast('User not found', 'error');
+            return;
+        }
+
+        document.getElementById('user-form-title').textContent = 'Edit User';
+        document.getElementById('user-username').value = user.username;
+        document.getElementById('user-name').value = user.name || '';
+        document.getElementById('user-email').value = user.email || '';
+        document.getElementById('user-role').value = user.role;
+        document.getElementById('user-password').value = ''; // Don't show existing password
+        document.getElementById('user-password').placeholder = 'Leave blank to keep current password';
+        
+        document.getElementById('user-form').dataset.mode = 'edit';
+        document.getElementById('user-form').dataset.userId = userId;
+        
+        this.showModal(document.getElementById('user-form-modal'));
+    }
+
+    async saveUser() {
+        const form = document.getElementById('user-form');
+        const formData = new FormData(form);
+        const mode = form.dataset.mode;
+        const userId = form.dataset.userId;
+
+        const userData = {
+            username: document.getElementById('user-username').value.trim(),
+            name: document.getElementById('user-name').value.trim(),
+            email: document.getElementById('user-email').value.trim(),
+            role: document.getElementById('user-role').value,
+            password: document.getElementById('user-password').value
+        };
+
+        // Validate
+        if (!userData.username || !userData.name || !userData.email || !userData.role) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        if (mode === 'create' && !userData.password) {
+            this.showToast('Password is required for new users', 'error');
+            return;
+        }
+
+        try {
+            const url = mode === 'create' ? '/api/users' : `/api/users/${userId}`;
+            const method = mode === 'create' ? 'POST' : 'PUT';
+            
+            // Don't send empty password for edits
+            if (mode === 'edit' && !userData.password) {
+                delete userData.password;
+            }
+
+            const response = await this.makeAuthenticatedRequest(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+
+            if (response.ok) {
+                this.showToast(`User ${mode === 'create' ? 'created' : 'updated'} successfully`, 'success');
+                this.hideModal(document.getElementById('user-form-modal'));
+                await this.loadAndDisplayUsers();
+                await this.loadUsers(); // Refresh dropdowns
+            } else {
+                const error = await response.json();
+                this.showToast(error.error || `Failed to ${mode} user`, 'error');
+            }
+        } catch (error) {
+            console.error('Error saving user:', error);
+            this.showToast('Failed to save user', 'error');
+        }
+    }
+
+    async deleteUser(userId) {
+        const user = this.allUsers.find(u => u.id == userId);
+        if (!user) return;
+
+        if (!confirm(`Are you sure you want to delete user "${user.name || user.username}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await this.makeAuthenticatedRequest(`/api/users/${userId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                this.showToast('User deleted successfully', 'success');
+                await this.loadAndDisplayUsers();
+                await this.loadUsers(); // Refresh dropdowns
+            } else {
+                const error = await response.json();
+                this.showToast(error.error || 'Failed to delete user', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            this.showToast('Failed to delete user', 'error');
+        }
     }
 }
 

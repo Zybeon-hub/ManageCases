@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "timestamp": "2025-08-05T12:24:07.080Z",
+    "userId": "system",
+    "action": "database_save",
+    "entity": "all_tables",
+    "entityId": null,
+    "oldData": null,
+    "newData": "{\"timestamp\":\"2025-08-05T12:24:07.080Z\"}",
+    "ipAddress": "127.0.0.1"
+  }
+]

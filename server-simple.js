@@ -15,12 +15,14 @@ const DATA_DIR = path.join(__dirname, 'data');
 const CASES_FILE = path.join(DATA_DIR, 'cases.json');
 const COUNTERS_FILE = path.join(DATA_DIR, 'counters.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const COMMENTS_FILE = path.join(DATA_DIR, 'comments.json');
+const AUDIT_FILE = path.join(DATA_DIR, 'audit_log.json');
 
 // User roles and permissions
 const USER_ROLES = {
   LEAD: { name: 'Lead', permissions: ['read'] },
   MANAGER: { name: 'Manager', permissions: ['read', 'update_status'] },
-  ADMIN: { name: 'Admin', permissions: ['read', 'update_status', 'create', 'delete', 'assign'] },
+  ADMIN: { name: 'Admin', permissions: ['read', 'update_status', 'create', 'delete', 'assign', 'admin'] },
   OPS: { name: 'Ops', permissions: ['read', 'update_status', 'create', 'assign'] }
 };
 
@@ -40,18 +42,15 @@ const CASE_STATUSES = {
 
 // User management system
 let users = [
-  // Default admin user
-  {
-    id: 1,
-    username: 'admin',
-    password: 'admin123',
-    email: 'admin@company.com',
-    role: 'ADMIN',
-    name: 'System Admin',
-    createdAt: new Date().toISOString(),
-    isActive: true
-  }
+  // No default users - will be populated from database or created via signup
 ];
+
+// Data arrays
+let cases = [];
+let comments = [];
+let auditLog = [];
+let nextCaseId = 1;
+let nextCommentId = 1;
 
 // For backwards compatibility with existing code, create USERS object from users array
 let USERS = {};
@@ -115,34 +114,12 @@ function ensureDataDirectory() {
 
 async function saveData() {
   try {
-    console.log('Saving data to database...');
+    console.log('Saving data to JSON files...');
     
-    // Save users
-    for (const user of users) {
-      try {
-        await dbManager.updateUser(user.id, user, 'system');
-      } catch (error) {
-        // If user doesn't exist, create it
-        await dbManager.createUser(user);
-      }
-    }
-    
-    // Save cases
-    for (const caseItem of cases) {
-      try {
-        await dbManager.updateCase(caseItem.id, caseItem, 'system');
-      } catch (error) {
-        // If case doesn't exist, create it
-        await dbManager.createCase(caseItem);
-      }
-    }
-    
-    // Save counters as settings
-    await dbManager.setSetting('nextCaseId', nextCaseId, 'number', 'system');
-    await dbManager.setSetting('nextCommentId', nextCommentId, 'number', 'system');
-    
-    // Also save JSON versions for backwards compatibility
+    // Ensure data directory exists
     ensureDataDirectory();
+    
+    // Save to JSON files only (database bypassed)
     fs.writeFileSync(CASES_FILE, JSON.stringify(cases, null, 2));
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
     fs.writeFileSync(COUNTERS_FILE, JSON.stringify({
@@ -150,7 +127,18 @@ async function saveData() {
       nextCommentId
     }, null, 2));
     
-    console.log('Data saved successfully to both Excel/CSV and JSON formats');
+    // Save comments if they exist
+    if (typeof comments !== 'undefined' && Array.isArray(comments)) {
+      fs.writeFileSync(COMMENTS_FILE, JSON.stringify(comments, null, 2));
+    }
+    
+    // Save audit log if it exists
+    if (typeof auditLog !== 'undefined' && Array.isArray(auditLog)) {
+      fs.writeFileSync(AUDIT_FILE, JSON.stringify(auditLog, null, 2));
+    }
+    
+    console.log('Data saved successfully to JSON files');
+    console.log(`Saved ${users.length} users, ${cases.length} cases`);
   } catch (error) {
     console.error('Error saving data:', error);
   }
@@ -158,43 +146,19 @@ async function saveData() {
 
 async function loadData() {
   try {
-    console.log('Loading data from database...');
+    console.log('Loading data from JSON files (temporary bypass)...');
     
-    // Load users
-    const loadedUsers = await dbManager.getUsers();
-    if (loadedUsers.length > 0) {
-      users = loadedUsers;
-      console.log(`Loaded ${users.length} users from database`);
-    }
-    
-    // Load cases
-    const loadedCases = await dbManager.getCases();
-    if (loadedCases.length > 0) {
-      cases = loadedCases;
-      console.log(`Loaded ${cases.length} cases from database`);
-    }
-    
-    // Load counters from settings
-    const nextCaseIdSetting = await dbManager.getSetting('nextCaseId');
-    const nextCommentIdSetting = await dbManager.getSetting('nextCommentId');
-    nextCaseId = nextCaseIdSetting ? parseInt(nextCaseIdSetting.value) : 4;
-    nextCommentId = nextCommentIdSetting ? parseInt(nextCommentIdSetting.value) : 1;
-    
-    // Sync USERS object for compatibility
-    syncUsersObject();
-    
-    console.log(`Loaded counters: nextCaseId=${nextCaseId}, nextCommentId=${nextCommentId}`);
-    
-    // Fallback to JSON if database is empty
-    if (users.length === 0 && cases.length === 0) {
-      console.log('Database seems empty, trying JSON fallback...');
-      await loadDataFromJSON();
-    }
+    // Temporarily skip database loading and go straight to JSON
+    await loadDataFromJSON();
     
   } catch (error) {
-    console.error('Error loading data from database:', error);
-    console.log('Trying JSON fallback...');
-    await loadDataFromJSON();
+    console.error('Error loading data:', error);
+    // Initialize with empty data if all fails
+    users = [];
+    cases = [];
+    nextCaseId = 1;
+    nextCommentId = 1;
+    syncUsersObject();
   }
 }
 
@@ -234,8 +198,8 @@ async function loadDataFromJSON() {
     // Sync USERS object for compatibility
     syncUsersObject();
     
-    // Save to database for future use
-    await saveData();
+    // Temporarily skip saving to database
+    // await saveData();
     
   } catch (error) {
     console.error('Error loading data from JSON:', error);
@@ -244,56 +208,10 @@ async function loadDataFromJSON() {
   }
 }
 
-// In-memory storage for cases
-let cases = [
-  {
-    id: 1,
-    title: "Customer Complaint - Product Defect",
-    description: "Customer reports defective product received",
-    status: "Open",
-    priority: "High",
-    assignedTo: "Sarah Ops",
-    createdAt: new Date('2025-07-28'),
-    updatedAt: new Date('2025-07-28'),
-    createdBy: "admin1",
-    comments: [
-      { id: 1, text: "Initial complaint received via email", timestamp: new Date('2025-07-28'), author: "System" }
-    ]
-  },
-  {
-    id: 2,
-    title: "Billing Inquiry",
-    description: "Customer questioning charges on their account",
-    status: "In Progress",
-    priority: "Medium",
-    assignedTo: "Tom Ops",
-    createdAt: new Date('2025-07-29'),
-    updatedAt: new Date('2025-07-30'),
-    createdBy: "manager1",
-    comments: [
-      { id: 1, text: "Reviewing customer account", timestamp: new Date('2025-07-29'), author: "Tom Ops" },
-      { id: 2, text: "Found discrepancy in billing system", timestamp: new Date('2025-07-30'), author: "Tom Ops" }
-    ]
-  },
-  {
-    id: 3,
-    title: "Technical Support Request",
-    description: "Customer unable to access their account",
-    status: "Closed-Approved",
-    priority: "Low",
-    assignedTo: "Sarah Ops",
-    createdAt: new Date('2025-07-26'),
-    updatedAt: new Date('2025-07-27'),
-    createdBy: "ops1",
-    comments: [
-      { id: 1, text: "Password reset sent to customer", timestamp: new Date('2025-07-26'), author: "Sarah Ops" },
-      { id: 2, text: "Customer confirmed access restored", timestamp: new Date('2025-07-27'), author: "Sarah Ops" }
-    ]
-  }
-];
-
-let nextCaseId = 4;
-let nextCommentId = 3;
+// Remove hardcoded default cases and counters - they're loaded from JSON now
+// let cases = []; // Already defined above
+// let nextCaseId = 1; // Already defined above
+// let nextCommentId = 1; // Already defined above
 
 // Helper functions for authorization
 function hasPermission(user, permission) {
@@ -332,10 +250,18 @@ function canTransitionStatus(fromStatus, toStatus, caseItem = null) {
 function getUserFromRequest(req) {
   // Get user from headers - no default fallback
   const userId = req.headers['x-user-id'] || req.headers['x-username'];
-  if (!userId) return null;
+  console.log('getUserFromRequest - userId from headers:', userId);
+  console.log('getUserFromRequest - all headers:', Object.keys(req.headers));
+  
+  if (!userId) {
+    console.log('getUserFromRequest - no userId, returning null');
+    return null;
+  }
   
   // Try to find by username first, then by old ID for compatibility
-  return users.find(u => u.username === userId) || USERS[userId] || null;
+  const user = users.find(u => u.username === userId) || USERS[userId] || null;
+  console.log('getUserFromRequest - found user:', user ? user.username : 'null');
+  return user;
 }
 
 // Helper function to get content type
@@ -388,7 +314,7 @@ function sendError(res, message, statusCode = 400) {
 }
 
 // Create HTTP server
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
   const method = req.method;
@@ -581,12 +507,153 @@ const server = http.createServer((req, res) => {
         return;
       }
       
-      const userList = Object.values(USERS).map(u => ({
+      const userList = users.map(u => ({
         id: u.id,
         name: u.name,
+        username: u.username,
+        email: u.email,
         role: u.role
       }));
       sendJSON(res, userList);
+      return;
+    }
+
+    // Create new user (admin only)
+    if (pathname === '/api/users' && method === 'POST') {
+      const user = getUserFromRequest(req);
+      if (!user || (user.role !== 'admin' && user.role !== 'ADMIN')) {
+        sendError(res, 'Unauthorized - Admin access required', 403);
+        return;
+      }
+
+      const body = await parseJSON(req);
+      if (!body.username || !body.name || !body.role || !body.password) {
+        sendError(res, 'Missing required fields: username, name, role, password', 400);
+        return;
+      }
+
+      // Check if username already exists
+      if (users.find(u => u.username === body.username)) {
+        sendError(res, 'Username already exists', 400);
+        return;
+      }
+
+      try {
+        const newUser = await dbManager.createUser({
+          username: body.username,
+          name: body.name,
+          email: body.email || '',
+          role: body.role,
+          password: body.password // In production, hash this password
+        });
+
+        // Update in-memory users array
+        users.push(newUser);
+        syncUsersObject();
+
+        sendJSON(res, { success: true, user: { id: newUser.id, username: newUser.username, name: newUser.name, role: newUser.role } });
+      } catch (error) {
+        console.error('Error creating user:', error);
+        sendError(res, 'Failed to create user', 500);
+      }
+      return;
+    }
+
+    // Update existing user (admin only)
+    if (pathname.match(/^\/api\/users\/(\d+)$/) && method === 'PUT') {
+      const user = getUserFromRequest(req);
+      if (!user || (user.role !== 'admin' && user.role !== 'ADMIN')) {
+        sendError(res, 'Unauthorized - Admin access required', 403);
+        return;
+      }
+
+      const userId = parseInt(pathname.split('/')[3]);
+      const body = await parseJSON(req);
+
+      const existingUser = users.find(u => u.id === userId);
+      if (!existingUser) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+
+      // Check if new username conflicts with other users
+      if (body.username && body.username !== existingUser.username) {
+        if (users.find(u => u.username === body.username && u.id !== userId)) {
+          sendError(res, 'Username already exists', 400);
+          return;
+        }
+      }
+
+      try {
+        const updateData = {
+          username: body.username || existingUser.username,
+          name: body.name || existingUser.name,
+          email: body.email || existingUser.email,
+          role: body.role || existingUser.role
+        };
+
+        // Only update password if provided
+        if (body.password) {
+          updateData.password = body.password; // In production, hash this password
+        }
+
+        const updatedUser = await dbManager.updateUser(userId, updateData, user.username);
+
+        // Update in-memory users array
+        const userIndex = users.findIndex(u => u.id === userId);
+        if (userIndex !== -1) {
+          users[userIndex] = { ...users[userIndex], ...updateData };
+          syncUsersObject();
+        }
+
+        sendJSON(res, { success: true, user: { id: updatedUser.id, username: updatedUser.username, name: updatedUser.name, role: updatedUser.role } });
+      } catch (error) {
+        console.error('Error updating user:', error);
+        sendError(res, 'Failed to update user', 500);
+      }
+      return;
+    }
+
+    // Delete user (admin only)
+    if (pathname.match(/^\/api\/users\/(\d+)$/) && method === 'DELETE') {
+      const user = getUserFromRequest(req);
+      if (!user || (user.role !== 'admin' && user.role !== 'ADMIN')) {
+        sendError(res, 'Unauthorized - Admin access required', 403);
+        return;
+      }
+
+      const userId = parseInt(pathname.split('/')[3]);
+      const existingUser = users.find(u => u.id === userId);
+      
+      if (!existingUser) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+
+      // Prevent deleting the last admin user
+      if (existingUser.role === 'admin' || existingUser.role === 'ADMIN') {
+        const adminCount = users.filter(u => u.role === 'admin' || u.role === 'ADMIN').length;
+        if (adminCount <= 1) {
+          sendError(res, 'Cannot delete the last admin user', 400);
+          return;
+        }
+      }
+
+      try {
+        await dbManager.deleteUser(userId, user.username);
+
+        // Remove from in-memory users array
+        const userIndex = users.findIndex(u => u.id === userId);
+        if (userIndex !== -1) {
+          users.splice(userIndex, 1);
+          syncUsersObject();
+        }
+
+        sendJSON(res, { success: true, message: 'User deleted successfully' });
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        sendError(res, 'Failed to delete user', 500);
+      }
       return;
     }
 

@@ -29,7 +29,10 @@
                     <button id="logout-btn" class="btn-secondary">Logout</button>
                 </div>
             </div>
-            <button id="new-case-btn" class="btn-primary hidden">+ New Case</button>
+            <div class="header-actions">
+                <button id="manage-users-btn" class="btn-secondary hidden">Manage Users</button>
+                <button id="new-case-btn" class="btn-primary hidden">+ New Case</button>
+            </div>
         </header>
 
         <!-- Filters Section -->
@@ -63,9 +66,8 @@
                 <label for="assignee-filter">Assigned To:</label>
                 <select id="assignee-filter">
                     <option value="All">All</option>
-                    <option value="Sarah Ops">Sarah Ops</option>
-                    <option value="Tom Ops">Tom Ops</option>
                     <option value="Unassigned">Unassigned</option>
+                    <!-- Users will be loaded dynamically -->
                 </select>
             </div>
             <button id="refresh-btn" class="btn-secondary">Refresh</button>
@@ -112,8 +114,7 @@
                         <label for="case-assignee">Assigned To</label>
                         <select id="case-assignee">
                             <option value="Unassigned">Unassigned</option>
-                            <option value="Sarah Ops">Sarah Ops</option>
-                            <option value="Tom Ops">Tom Ops</option>
+                            <!-- Users will be loaded dynamically -->
                         </select>
                     </div>
                 </div>
@@ -135,6 +136,67 @@
             <div id="case-details">
                 <!-- Case details will be loaded here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Modal for User Management -->
+    <div id="user-modal" class="modal hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="user-modal-title">Manage Users</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="user-management-actions">
+                    <button id="add-user-btn" class="btn-primary">+ Add New User</button>
+                    <button id="refresh-users-btn" class="btn-secondary">Refresh</button>
+                </div>
+                <div id="users-list">
+                    <!-- Users will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit User -->
+    <div id="user-form-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="user-form-title">Add New User</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="user-form">
+                <div class="form-group">
+                    <label for="user-username">Username *</label>
+                    <input type="text" id="user-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-name">Full Name *</label>
+                    <input type="text" id="user-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Email *</label>
+                    <input type="email" id="user-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-role">Role *</label>
+                    <select id="user-role" required>
+                        <option value="">Select Role</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="MANAGER">Manager</option>
+                        <option value="LEAD">Lead</option>
+                        <option value="OPS">Ops</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Password *</label>
+                    <input type="password" id="user-password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary close">Cancel</button>
+                    <button type="submit" class="btn-primary">Save User</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -208,6 +270,9 @@
                     // Load workflow information
                     await this.loadWorkflowInfo();
                     
+                    // Load users for dropdowns
+                    await this.loadUsers();
+                    
                     // Update UI
                     document.getElementById('current-user-name').textContent = this.currentUser.name;
                     document.getElementById('current-user-role').textContent = this.currentUser.role;
@@ -265,6 +330,15 @@
                         });
                     }
 
+                    // Manage users button (admin only)
+                    const manageUsersBtn = document.getElementById('manage-users-btn');
+                    if (manageUsersBtn) {
+                        manageUsersBtn.addEventListener('click', () => {
+                            console.log('Manage users button clicked');
+                            this.showUserManagement();
+                        });
+                    }
+
                     // Filter change events
                     const statusFilter = document.getElementById('status-filter');
                     const priorityFilter = document.getElementById('priority-filter');
@@ -308,6 +382,30 @@
                             this.closeModal(document.getElementById('case-modal'));
                         });
                     }
+
+                    // User management buttons
+                    const addUserBtn = document.getElementById('add-user-btn');
+                    if (addUserBtn) {
+                        addUserBtn.addEventListener('click', () => {
+                            this.openNewUserModal();
+                        });
+                    }
+
+                    const refreshUsersBtn = document.getElementById('refresh-users-btn');
+                    if (refreshUsersBtn) {
+                        refreshUsersBtn.addEventListener('click', () => {
+                            this.loadAndDisplayUsers();
+                        });
+                    }
+
+                    // User form submission
+                    const userForm = document.getElementById('user-form');
+                    if (userForm) {
+                        userForm.addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            this.saveUser();
+                        });
+                    }
                 }, 200);
             }
 
@@ -348,13 +446,42 @@
             }
 
             updateUIForPermissions() {
+                console.log('updateUIForPermissions called (index.html version)');
+                console.log('Current user:', this.currentUser);
+                console.log('User role:', this.currentUser?.role);
+                
                 // Show/hide new case button
                 const newCaseBtn = document.getElementById('new-case-btn');
                 if (newCaseBtn) {
                     if (this.hasPermission('create')) {
                         newCaseBtn.classList.remove('hidden');
+                        console.log('Showing new case button');
                     } else {
                         newCaseBtn.classList.add('hidden');
+                        console.log('Hiding new case button');
+                    }
+                }
+                
+                // Show/hide manage users button (admin only)
+                const manageUsersBtn = document.getElementById('manage-users-btn');
+                console.log('Manage users button element:', manageUsersBtn);
+                
+                if (this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.role === 'ADMIN')) {
+                    console.log('✅ User is admin, showing manage users button');
+                    if (manageUsersBtn) {
+                        manageUsersBtn.classList.remove('hidden');
+                        console.log('✅ Removed hidden class from manage users button');
+                    } else {
+                        console.log('❌ Manage users button element not found');
+                    }
+                } else {
+                    console.log('❌ User is not admin, hiding manage users button');
+                    console.log('Role check details:');
+                    console.log('- currentUser exists:', !!this.currentUser);
+                    console.log('- role === "admin":', this.currentUser ? this.currentUser.role === 'admin' : false);
+                    console.log('- role === "ADMIN":', this.currentUser ? this.currentUser.role === 'ADMIN' : false);
+                    if (manageUsersBtn) {
+                        manageUsersBtn.classList.add('hidden');
                     }
                 }
             }
@@ -826,6 +953,312 @@
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
+            }
+
+            // User Management Methods
+            showUserManagement() {
+                if (!this.currentUser || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'ADMIN')) {
+                    this.showToast('You do not have permission to manage users', 'error');
+                    return;
+                }
+                
+                this.loadAndDisplayUsers();
+                this.showModal(document.getElementById('user-modal'));
+            }
+
+            async loadAndDisplayUsers() {
+                const usersList = document.getElementById('users-list');
+                usersList.innerHTML = '<div class="loading">Loading users...</div>';
+                
+                try {
+                    const users = await this.loadUsers();
+                    this.displayUsersList(users);
+                } catch (error) {
+                    usersList.innerHTML = '<div class="error">Failed to load users</div>';
+                }
+            }
+
+            async loadUsers() {
+                try {
+                    const response = await this.makeAuthenticatedRequest('/api/users');
+                    if (response.ok) {
+                        this.allUsers = await response.json();
+                        this.updateUserDropdowns();
+                        return this.allUsers;
+                    }
+                } catch (error) {
+                    console.error('Error loading users:', error);
+                    this.showToast('Failed to load users', 'error');
+                }
+                return [];
+            }
+
+            updateUserDropdowns() {
+                console.log('Updating user dropdowns with users:', this.allUsers);
+                
+                // Update assignee filter dropdown
+                const assigneeFilter = document.getElementById('assignee-filter');
+                if (assigneeFilter && this.allUsers) {
+                    const currentValue = assigneeFilter.value;
+                    assigneeFilter.innerHTML = '<option value="All">All</option>';
+                    
+                    this.allUsers.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.username || user.name;
+                        option.textContent = user.name || user.username;
+                        assigneeFilter.appendChild(option);
+                    });
+                    
+                    // Add unassigned option
+                    const unassignedOption = document.createElement('option');
+                    unassignedOption.value = 'Unassigned';
+                    unassignedOption.textContent = 'Unassigned';
+                    assigneeFilter.appendChild(unassignedOption);
+                    
+                    // Restore previous selection
+                    assigneeFilter.value = currentValue;
+                    console.log('Updated assignee filter dropdown with', this.allUsers.length, 'users');
+                }
+
+                // Update case form assignee dropdown
+                const caseAssignee = document.getElementById('case-assignee');
+                if (caseAssignee && this.allUsers) {
+                    const currentValue = caseAssignee.value;
+                    caseAssignee.innerHTML = '<option value="Unassigned">Unassigned</option>';
+                    
+                    this.allUsers.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.username || user.name;
+                        option.textContent = user.name || user.username;
+                        caseAssignee.appendChild(option);
+                    });
+                    
+                    // Restore previous selection
+                    caseAssignee.value = currentValue;
+                    console.log('Updated case assignee dropdown with', this.allUsers.length, 'users');
+                }
+            }
+
+            displayUsersList(users) {
+                const usersList = document.getElementById('users-list');
+                
+                if (!users || users.length === 0) {
+                    usersList.innerHTML = '<div class="no-data">No users found</div>';
+                    return;
+                }
+
+                const usersHtml = users.map(user => `
+                    <div class="user-item" data-user-id="${user.id}">
+                        <div class="user-info">
+                            <div class="user-name">${this.escapeHtml(user.name || user.username)}</div>
+                            <div class="user-details">
+                                <span class="user-username">@${this.escapeHtml(user.username)}</span>
+                                <span class="user-role badge role-${user.role}">${user.role}</span>
+                                <span class="user-email">${this.escapeHtml(user.email || 'No email')}</span>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn-small btn-secondary edit-user-btn" data-user-id="${user.id}">Edit</button>
+                            ${user.role !== 'admin' && user.role !== 'ADMIN' ? `<button class="btn-small btn-danger delete-user-btn" data-user-id="${user.id}">Delete</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                usersList.innerHTML = usersHtml;
+
+                // Add event listeners for edit and delete buttons
+                usersList.querySelectorAll('.edit-user-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = e.target.dataset.userId;
+                        this.editUser(userId);
+                    });
+                });
+
+                usersList.querySelectorAll('.delete-user-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = e.target.dataset.userId;
+                        this.deleteUser(userId);
+                    });
+                });
+            }
+
+            async editUser(userId) {
+                console.log('Editing user with ID:', userId);
+                
+                // Find the user in the current user list
+                const user = this.allUsers.find(u => u.id == userId);
+                if (!user) {
+                    this.showToast('User not found', 'error');
+                    return;
+                }
+
+                // Populate the user form with existing data
+                document.getElementById('user-form-title').textContent = 'Edit User';
+                document.getElementById('user-username').value = user.username;
+                document.getElementById('user-name').value = user.name || '';
+                document.getElementById('user-email').value = user.email || '';
+                document.getElementById('user-role').value = user.role;
+                document.getElementById('user-password').value = ''; // Don't show existing password
+                document.getElementById('user-password').placeholder = 'Leave blank to keep current password';
+                document.getElementById('user-password').required = false; // Password not required for edit
+                
+                // Set form mode and user ID
+                document.getElementById('user-form').dataset.mode = 'edit';
+                document.getElementById('user-form').dataset.userId = userId;
+                
+                // Show the user form modal
+                this.showModal(document.getElementById('user-form-modal'));
+            }
+
+            async deleteUser(userId) {
+                console.log('Deleting user with ID:', userId);
+                
+                // Find the user to get their name for confirmation
+                const user = this.allUsers.find(u => u.id == userId);
+                if (!user) {
+                    this.showToast('User not found', 'error');
+                    return;
+                }
+
+                // Prevent deleting admin users or self
+                if (user.role === 'ADMIN' || user.role === 'admin') {
+                    this.showToast('Cannot delete admin users', 'error');
+                    return;
+                }
+
+                if (user.id == this.currentUser.id || userId == this.currentUser.id) {
+                    this.showToast('Cannot delete your own account', 'error');
+                    return;
+                }
+
+                // Confirm deletion
+                if (!confirm(`Are you sure you want to delete user "${user.name || user.username}"?\n\nThis action cannot be undone.`)) {
+                    return;
+                }
+
+                try {
+                    const response = await this.makeAuthenticatedRequest(`/api/users/${userId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        this.showToast('User deleted successfully', 'success');
+                        // Refresh the user list
+                        await this.loadAndDisplayUsers();
+                        // Refresh dropdowns
+                        await this.loadUsers();
+                    } else {
+                        const error = await response.json();
+                        this.showToast(error.error || 'Failed to delete user', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    this.showToast('Failed to delete user', 'error');
+                }
+            }
+
+            async saveUser() {
+                console.log('Saving user...');
+                
+                const form = document.getElementById('user-form');
+                const mode = form.dataset.mode;
+                const userId = form.dataset.userId;
+
+                const userData = {
+                    username: document.getElementById('user-username').value.trim(),
+                    name: document.getElementById('user-name').value.trim(),
+                    email: document.getElementById('user-email').value.trim(),
+                    role: document.getElementById('user-role').value,
+                    password: document.getElementById('user-password').value
+                };
+
+                // Validate required fields
+                if (!userData.username || !userData.name || !userData.email || !userData.role) {
+                    this.showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                if (mode === 'create' && !userData.password) {
+                    this.showToast('Password is required for new users', 'error');
+                    return;
+                }
+
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(userData.email)) {
+                    this.showToast('Please enter a valid email address', 'error');
+                    return;
+                }
+
+                try {
+                    let url, method;
+                    
+                    if (mode === 'create') {
+                        url = '/api/auth/signup';
+                        method = 'POST';
+                    } else {
+                        url = `/api/users/${userId}`;
+                        method = 'PUT';
+                        // Don't send empty password for edits
+                        if (!userData.password) {
+                            delete userData.password;
+                        }
+                    }
+
+                    const response = await this.makeAuthenticatedRequest(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+
+                    if (response.ok) {
+                        this.showToast(`User ${mode === 'create' ? 'created' : 'updated'} successfully`, 'success');
+                        this.hideModal(document.getElementById('user-form-modal'));
+                        // Refresh the user list
+                        await this.loadAndDisplayUsers();
+                        // Refresh dropdowns
+                        await this.loadUsers();
+                    } else {
+                        const error = await response.json();
+                        this.showToast(error.error || `Failed to ${mode} user`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error saving user:', error);
+                    this.showToast('Failed to save user', 'error');
+                }
+            }
+
+            openNewUserModal() {
+                console.log('Opening new user modal...');
+                
+                // Reset form for new user
+                document.getElementById('user-form-title').textContent = 'Add New User';
+                document.getElementById('user-form').reset();
+                document.getElementById('user-password').placeholder = 'Enter password';
+                document.getElementById('user-password').required = true; // Password required for new users
+                
+                // Set form mode
+                document.getElementById('user-form').dataset.mode = 'create';
+                delete document.getElementById('user-form').dataset.userId;
+                
+                // Show the user form modal
+                this.showModal(document.getElementById('user-form-modal'));
+            }
+
+            showModal(modal) {
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('show');
+                }
+            }
+
+            hideModal(modal) {
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('show');
+                }
             }
         }
 

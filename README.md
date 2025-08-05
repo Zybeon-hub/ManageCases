@@ -1,16 +1,19 @@
 # Case Workflow Management System
 
-A modern web application for managing case workflows with a clean and intuitive interface.
+A modern web application for managing case workflows with user authentication, role-based access control, and persistent data storage.
 
 ## Features
 
-- **Case Management**: Create, view, edit, and delete cases
-- **Status Tracking**: Track cases through different statuses (Open, In Progress, Resolved, Closed)
-- **Priority Management**: Assign priorities (High, Medium, Low) to cases
-- **Assignment**: Assign cases to team members
-- **Comments System**: Add comments and track case history
-- **Filtering**: Filter cases by status, priority, and assignee
-- **Responsive Design**: Works on desktop and mobile devices
+- **User Management**: Complete user authentication and role-based access control
+- **Case Management**: Create, view, edit, and delete cases with full CRUD operations
+- **Workflow Management**: Advanced status progression with workflow rules
+- **Priority Management**: Assign and manage case priorities (High, Medium, Low)
+- **Assignment System**: Assign cases to team members with dynamic user dropdowns
+- **Comments System**: Add comments and track complete case history
+- **Advanced Filtering**: Filter cases by status, priority, and assignee
+- **Data Persistence**: JSON-based database with automatic backups
+- **Audit Trail**: Complete logging of all changes and user activities
+- **Responsive Design**: Modern UI that works on desktop and mobile devices
 
 ## Getting Started
 
@@ -46,34 +49,87 @@ The application will be available at `http://localhost:3000`
 ```
 case-workflow-app/
 ├── package.json          # Project dependencies and scripts
-├── server.js             # Express.js server with API endpoints
+├── server-simple.js      # Express.js server with API endpoints and authentication
+├── data/                 # JSON-based database files
+│   ├── cases.json       # Case data
+│   ├── users.json       # User accounts and roles
+│   ├── comments.json    # Case comments
+│   ├── audit_log.json   # Activity audit trail
+│   ├── sessions.json    # User sessions
+│   ├── settings.json    # Application settings
+│   ├── counters.json    # ID counters
+│   └── backups/         # Automatic backup directory
 ├── public/               # Frontend files
-│   ├── index.html        # Main HTML file
+│   ├── index.html        # Main application (authenticated users)
+│   ├── login.html        # Login page
+│   ├── signup.html       # User registration page
+│   ├── logout.html       # Logout page
 │   ├── styles.css        # CSS styling
-│   └── app.js           # Frontend JavaScript
+│   └── app.js           # Legacy frontend JavaScript
+├── .env.example         # Environment variables template
+├── .gitignore          # Git ignore rules
 └── README.md            # This file
 ```
 
 ## API Endpoints
 
-The application provides a RESTful API for case management:
+The application provides a comprehensive RESTful API with authentication:
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `POST /api/auth/signup` - User registration (admin only)
 
 ### Cases
-- `GET /api/cases` - Get all cases (supports filtering)
+- `GET /api/cases` - Get all cases (supports filtering, requires authentication)
 - `GET /api/cases/:id` - Get a specific case
-- `POST /api/cases` - Create a new case
-- `PUT /api/cases/:id` - Update a case
-- `DELETE /api/cases/:id` - Delete a case
+- `POST /api/cases` - Create a new case (requires appropriate permissions)
+- `PUT /api/cases/:id` - Update a case (requires appropriate permissions)
+- `DELETE /api/cases/:id` - Delete a case (requires delete permissions)
 
 ### Comments
 - `POST /api/cases/:id/comments` - Add a comment to a case
+
+### Users (Admin only)
+- `GET /api/users` - Get all users
+- `POST /api/users` - Create a new user
+- `PUT /api/users/:id` - Update user information
+- `DELETE /api/users/:id` - Delete a user
 
 ### Query Parameters for Filtering
 - `status` - Filter by case status
 - `priority` - Filter by case priority
 - `assignedTo` - Filter by assignee
 
+## User Roles and Permissions
+
+The system supports four user roles with different permission levels:
+
+- **ADMIN**: Full system access including user management
+- **MANAGER**: Can view, create, edit cases and update status
+- **LEAD**: Can view cases and update case status  
+- **OPS**: Can view, create, assign cases and update status
+
+## Default Login Credentials
+
+For initial setup, use these default accounts:
+
+- **Admin**: username: `admin`, password: `admin123`
+- **Test User**: username: `testuser3`, password: `password123`
+
 ## Usage
+
+### First Time Setup
+1. Start the application using `npm start`
+2. Navigate to `http://localhost:3000`
+3. You'll be redirected to the login page
+4. Use default admin credentials: username: `admin`, password: `admin123`
+
+### User Management (Admin Only)
+1. Click "Manage Users" button in the main interface
+2. Add new users with appropriate roles
+3. Edit existing user information
+4. Delete users (except admin users)
 
 ### Creating a New Case
 1. Click the "New Case" button
@@ -83,8 +139,8 @@ The application provides a RESTful API for case management:
 
 ### Managing Cases
 - **View Details**: Click "View Details" on any case card to see full information and comments
-- **Edit**: Click "Edit" to modify case information
-- **Delete**: Click "Delete" to remove a case (with confirmation)
+- **Edit**: Click "Edit" to modify case information (permissions dependent)
+- **Delete**: Click "Delete" to remove a case (requires delete permissions)
 - **Filter**: Use the filter controls at the top to find specific cases
 
 ### Adding Comments
@@ -93,30 +149,70 @@ The application provides a RESTful API for case management:
 3. Type your comment in the text area
 4. Click "Add Comment"
 
+### Case Workflow
+Cases follow a defined workflow with status progression:
+- **Open** → **Assigned** → **In Progress** → **Resolved** → **Closed-Approved/Closed-Reject**
+- Cases can be put on **Hold** from any active status
+- Only forward progression is allowed (no moving backward)
+- Final states can only transition to **Reopen**
+
 ## Technology Stack
 
 - **Backend**: Node.js with Express.js
-- **Frontend**: Vanilla HTML, CSS, and JavaScript
-- **Styling**: Modern CSS with flexbox and grid layouts
-- **Data Storage**: In-memory storage (for demo purposes)
+- **Authentication**: Session-based authentication with secure tokens
+- **Frontend**: Modern HTML5, CSS3, and Vanilla JavaScript
+- **Styling**: Responsive CSS with flexbox and grid layouts
+- **Data Storage**: JSON-based file system with automatic backups
+- **Security**: Role-based access control and input validation
 
-## Customization
+## Data Management
 
-### Adding New Team Members
-Edit the `assignee-filter` select options in `index.html` and the corresponding options in the case form.
+### Persistence
+- All data is automatically saved to JSON files in the `data/` directory
+- Data persists through server restarts
+- Changes are saved immediately when made
 
-### Modifying Case Statuses
-Update the status options in both the HTML filters and the server-side validation.
+### Automatic Backups
+- System creates periodic backups of all data
+- Backups are stored in `data/backups/` with timestamps
+- Multiple backup versions are maintained for data recovery
 
-### Styling
-All styles are contained in `public/styles.css` and can be customized as needed.
+### Audit Trail
+- All user actions are logged for compliance and debugging
+- Audit logs include user information, timestamps, and action details
+- Logs are stored in `data/audit_log.json`
 
 ## Development Notes
 
-- The application uses in-memory storage, so data will be lost when the server restarts
-- For production use, integrate with a proper database (PostgreSQL, MongoDB, etc.)
-- Add authentication and authorization for multi-user environments
-- Consider adding real-time updates with WebSockets for collaborative features
+- The application uses JSON-based file storage for data persistence
+- All user actions are logged for audit and compliance purposes
+- Role-based permissions are enforced on both frontend and backend
+- Session management provides secure authentication
+- Automatic backups ensure data recovery capabilities
+- For enhanced security in production, consider HTTPS and environment-based configuration
+
+## Production Deployment
+
+### Environment Variables
+Create a `.env` file based on `.env.example`:
+```
+PORT=3000
+NODE_ENV=production
+SESSION_SECRET=your-secure-session-secret-here
+```
+
+### Security Considerations
+- Change default admin password immediately
+- Use HTTPS in production
+- Set secure session secrets
+- Consider implementing rate limiting
+- Regular backup verification
+
+### Scaling Considerations
+- For high-volume usage, consider migrating to a proper database (PostgreSQL, MongoDB)
+- Implement caching for better performance
+- Add load balancing for multiple server instances
+- Consider real-time updates with WebSockets
 
 ## Browser Support
 
