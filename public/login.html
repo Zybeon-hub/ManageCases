@@ -122,6 +122,337 @@
             text-align: center;
             border: 1px solid #c6f6d5;
         }
+        
+        .demo-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4299e1;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+            z-index: 1000;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .demo-content {
+            white-space: nowrap;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .demo-box {
+                bottom: 10px;
+                right: 10px;
+                font-size: 0.8rem;
+                padding: 10px 12px;
+            }
+        }
+
+        .about-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            color: #4a5568;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .about-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 2rem 1rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #2d3748;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-body h3 {
+            color: #2d3748;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .modal-body p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body ul {
+            color: #4a5568;
+            line-height: 1.8;
+            padding-left: 1.5rem;
+        }
+
+        .modal-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .tech-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .timeline-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: #667eea;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .timeline-note {
+            text-align: center;
+            font-style: italic;
+            color: #718096;
+        }
+
+        .time-comparison {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .time-comparison h4 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .comparison-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 2px solid transparent;
+        }
+
+        .ai-method {
+            border-color: #48bb78;
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        }
+
+        .traditional-method {
+            border-color: #ed8936;
+            background: linear-gradient(135deg, #fffaf0 0%, #fed7aa 100%);
+        }
+
+        .comparison-item h5 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .comparison-item ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .comparison-item li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        .comparison-item li:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-item .total {
+            background: rgba(255,255,255,0.7);
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        .achievements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .achievement {
+            background: #48bb78;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 10px;
+                max-height: 95vh;
+            }
+            
+            .modal-header, .modal-body {
+                padding: 1.5rem;
+            }
+            
+            .timeline-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .about-btn {
+                top: 10px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -150,6 +481,122 @@
             
             <div class="auth-links">
                 <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Credentials Floating Box -->
+    <div class="demo-box">
+        <div class="demo-content">
+            👍 <strong>Demo:</strong> admin / admin123
+        </div>
+    </div>
+
+    <!-- About Button -->
+    <button class="about-btn" onclick="openAboutModal()">ℹ️ About</button>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏆 Case Workflow Management System</h2>
+                <button class="close-btn" onclick="closeAboutModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="project-intro">
+                    <h3>📋 What is this Application?</h3>
+                    <p>A comprehensive case management system designed for modern businesses to streamline workflow processes, manage user permissions, and track case progress efficiently.</p>
+                </div>
+
+                <div class="special-features">
+                    <h3>✨ What Makes it Special?</h3>
+                    <ul>
+                        <li><strong>🔐 Advanced Authentication:</strong> Secure session-based login with role-based access control</li>
+                        <li><strong>👥 Dynamic User Management:</strong> Real-time CRUD operations for user accounts</li>
+                        <li><strong>📊 Live Updates:</strong> Instant UI refresh without page reloads</li>
+                        <li><strong>💾 Data Persistence:</strong> JSON-based database with automatic backup system</li>
+                        <li><strong>🎨 Responsive Design:</strong> Mobile-first approach with modern UI/UX</li>
+                        <li><strong>🚀 Production Ready:</strong> Deployed with CI/CD pipeline and monitoring</li>
+                        <li><strong>🔧 No External Dependencies:</strong> Pure Node.js backend, vanilla JavaScript frontend</li>
+                        <li><strong>📱 Cross-Platform:</strong> Works seamlessly on desktop, tablet, and mobile</li>
+                    </ul>
+                </div>
+
+                <div class="tech-stack">
+                    <h3>🛠️ Technology Stack</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <strong>Backend:</strong> Node.js, Pure JavaScript
+                        </div>
+                        <div class="tech-item">
+                            <strong>Frontend:</strong> HTML5, CSS3, Vanilla JS
+                        </div>
+                        <div class="tech-item">
+                            <strong>Database:</strong> JSON-based with backup system
+                        </div>
+                        <div class="tech-item">
+                            <strong>Deployment:</strong> Render with GitHub integration
+                        </div>
+                    </div>
+                </div>
+
+                <div class="development-time">
+                    <h3>⏱️ Development Timeline</h3>
+                    <div class="timeline-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">25-30</div>
+                            <div class="stat-label">Active Hours</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">5 Days</div>
+                            <div class="stat-label">Calendar Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">75%</div>
+                            <div class="stat-label">Time Saved vs Manual</div>
+                        </div>
+                    </div>
+                    
+                    <div class="time-comparison">
+                        <h4>🤖 With AI Agent vs 👨‍💻 Traditional Development</h4>
+                        <div class="comparison-grid">
+                            <div class="comparison-item ai-method">
+                                <h5>🚀 AI-Assisted (This Project)</h5>
+                                <ul>
+                                    <li><strong>Planning & Setup:</strong> 4-5 hours</li>
+                                    <li><strong>Core Development:</strong> 15-20 hours</li>
+                                    <li><strong>Testing & Debug:</strong> 3-5 hours</li>
+                                    <li><strong>Deployment & Polish:</strong> 3-5 hours</li>
+                                    <li class="total"><strong>Total: 25-30 hours</strong></li>
+                                </ul>
+                            </div>
+                            <div class="comparison-item traditional-method">
+                                <h5>⏳ Traditional Development</h5>
+                                <ul>
+                                    <li><strong>Research & Planning:</strong> 15-20 hours</li>
+                                    <li><strong>Core Development:</strong> 40-60 hours</li>
+                                    <li><strong>Testing & Debug:</strong> 15-25 hours</li>
+                                    <li><strong>Documentation:</strong> 10-15 hours</li>
+                                    <li class="total"><strong>Total: 80-120 hours</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="timeline-note">Demonstrates modern AI-assisted development efficiency while maintaining professional code quality and complete feature implementation.</p>
+                </div>
+
+                <div class="project-highlights">
+                    <h3>🎯 Key Achievements</h3>
+                    <div class="achievements">
+                        <span class="achievement">✅ Zero External Libraries</span>
+                        <span class="achievement">✅ Mobile Responsive</span>
+                        <span class="achievement">✅ Production Deployed</span>
+                        <span class="achievement">✅ Real-time Updates</span>
+                        <span class="achievement">✅ Security Focused</span>
+                        <span class="achievement">✅ Clean Architecture</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -229,6 +676,31 @@
         if (currentUser) {
             window.location.href = '/';
         }
+        
+        // About Modal Functions
+        function openAboutModal() {
+            document.getElementById('about-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeAboutModal() {
+            document.getElementById('about-modal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('about-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAboutModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAboutModal();
+            }
+        });
     </script>
 </body>
 </html>

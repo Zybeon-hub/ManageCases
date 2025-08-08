@@ -1,23 +1,42 @@
 [
   {
     "id": 1,
-    "username": "testuser3",
-    "password": "iam@123",
-    "name": "Test User 3",
-    "email": "test3@example.com",
+    "username": "admin",
+    "password": "admin123",
+    "name": "System Administrator",
+    "email": "admin@company.com",
     "role": "ADMIN",
-    "createdAt": "2025-08-05T10:41:14.009Z",
+    "createdAt": "2025-01-01T00:00:00.000Z",
     "isActive": true
   },
   {
-    "id": 1754407800976,
-    "username": "IAM",
-    "name": "IAM",
-    "email": "IAM@IAM.com",
-    "role": "ADMIN",
-    "password": "iam@123",
-    "isActive": true,
-    "createdAt": "2025-08-05T15:30:00.976Z",
-    "createdBy": "testuser3"
+    "id": 2,
+    "username": "manager1",
+    "password": "manager123",
+    "name": "Project Manager",
+    "email": "manager@company.com",
+    "role": "MANAGER",
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 3,
+    "username": "lead1",
+    "password": "lead123",
+    "name": "Team Lead",
+    "email": "lead@company.com",
+    "role": "LEAD",
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": 4,
+    "username": "ops1",
+    "password": "ops123",
+    "name": "Operations Specialist",
+    "email": "ops@company.com",
+    "role": "OPS",
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "isActive": true
   }
 ]

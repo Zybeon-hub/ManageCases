@@ -1,13 +1,13 @@
 [
   {
     "id": 1,
-    "title": "c1",
-    "description": "cq",
+    "title": "Case1",
+    "description": "Case1",
     "status": "In Progress",
     "priority": "Low",
     "assignedTo": "Unassigned",
     "createdAt": "2025-08-05T10:50:53.361Z",
-    "updatedAt": "2025-08-05T11:23:06.143Z",
+    "updatedAt": "2025-08-06T15:07:20.829Z",
     "createdBy": 1,
     "comments": [
       {
@@ -27,6 +27,12 @@
         "text": "Status changed from Assigned to In Progress",
         "timestamp": "2025-08-05T11:23:06.143Z",
         "author": "Test User 3"
+      },
+      {
+        "id": 4,
+        "text": "Title updated; Description updated",
+        "timestamp": "2025-08-06T15:07:20.829Z",
+        "author": "System Administrator"
       }
     ]
   }
